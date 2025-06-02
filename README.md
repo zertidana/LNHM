@@ -1,1 +1,1 @@
-# 🏛️ LNHM (Liverpool Natural History Museum) 🏛️
+# 🏛️ Liverpool Natural History Museum (LNMH) 🏛️

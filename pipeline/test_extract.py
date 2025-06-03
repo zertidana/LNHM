@@ -137,37 +137,13 @@ def test_get_all_plants_terminates_after_5_loops(fake_get_request, plant_not_fou
     fake_get_request_value = plant_not_found
     fake_get_request.return_value = fake_get_request_value
     returned_value = get_all_plants("pretendthisisvalid")
-    print(len(returned_value))
-    assert False
-
-
-def test_get_all_plants_returns_list_len_5():
-    """Test if get_all_plants returns a list of len(5)
-    when passed responses with 5 regular, 5 error"""
-    assert False
-
-
-def test_get_all_plants_returns_list_len_5():
-    """Test if get_all_plants returns len(4) 
-    and plant_id = 12 
-    when passed responses with:
-    (3 responses with data, 2 errors, 
-    1 error that is not plant not found, 
-    1 with data, 5 with not found
-    """
-    assert False
+    assert len(returned_value) == 0
+    assert type(returned_value) == list
 
 
 """
 
 save_to_csv - takes a list of dictionaries and saves to a csv file
-
-5 tests
-check for type plants_list
-check filename is not empty
-check filename ends in .csv
-check filename is str type
-mock writing to csv and check that function executed?
 
 """
 
@@ -191,8 +167,3 @@ def test_save_to_csv_invalid_format_filename_or_empty():
     with pytest.raises(ValueError) as exc:
         save_to_csv([{"example": "yep"}], "cool")
     assert str(exc.value) == "Please end your filename in .csv."
-
-
-def test_save_to_csv_mock_writing_to_csv():
-    """Tests that the csv has written to csv (magic mock)"""
-    assert False

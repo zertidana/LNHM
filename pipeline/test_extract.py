@@ -13,6 +13,11 @@ load_dotenv()
 
 def test_api_check_valid():
     """Check for valid api call."""
+    """
+    
+
+    
+    """
     assert fetch_data(4)
     assert fetch_data(9)
     assert fetch_data(13)
@@ -38,3 +43,16 @@ def test_get_all_plants_not_empty():
 def test_save_to_csv():
     with pytest.raises(TypeError):
         save_to_csv(12984)
+
+
+""""
+get_all_plants
+
+a bunch of error data
+checking to stop after 5 
+
+
+
+
+
+"""

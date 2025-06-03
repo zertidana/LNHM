@@ -9,6 +9,7 @@ def load_data(file_path='data/output.csv') -> pd.DataFrame:
 
 
 def cleaning(df) -> pd.DataFrame:
+    """Cleans the dataframe."""
     df = df[
         'name': 'plant_name',
         'temperature': 'temperature',

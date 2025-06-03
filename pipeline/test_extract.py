@@ -76,6 +76,14 @@ def plant_33():
     }
 
 
+@pytest.fixture
+def plant_not_found():
+    return {
+        "plant_id": 33,
+        "error": "plant not found",
+    }
+
+
 def test_fetch_data_invalid_type_url():
     """Checks if url in fetch_data is a valid type."""
     with pytest.raises(TypeError) as exc:
@@ -92,11 +100,13 @@ def test_fetch_data_invalid_type_plant_id():
 
 @patch('extract.get_request')
 def test_fetch_data_valid(fake_plant_request, plant_33):
-    """Checks if url in fetch_data is a valid type."""
+    """Passes correct type data to fetch_data() and checks:
+    if it returns a dictionary object,
+    if it returns something exactly the same as plant 33 (mocked into get_request)"""
     fake_plant_request_value = plant_33
     fake_plant_request.return_value = fake_plant_request_value
-    assert type(fetch_data('coolurl', 1)) == dict
-    assert fetch_data('coolurl', 1) == plant_33
+    assert type(fetch_data('fake_url_but_string', 1)) == dict
+    assert fetch_data('fake_url_but_string', 1) == plant_33
 
 
 """
@@ -119,10 +129,15 @@ def test_get_all_plants_invalid_type_not_found_limit():
     assert str(exc.value) == 'Please use a valid int value.'
 
 
-def test_get_all_plants_terminates_after_5_loops():
+@patch('extract.get_request')
+def test_get_all_plants_terminates_after_5_loops(fake_get_request, plant_not_found):
     """Test if get_all_plants terminates immediately 
     after 5 responses with 'error: plant not found' 
     list it returns should also be empty?"""
+    fake_get_request_value = plant_not_found
+    fake_get_request.return_value = fake_get_request_value
+    returned_value = get_all_plants("pretendthisisvalid")
+    print(len(returned_value))
     assert False
 
 

@@ -1,7 +1,6 @@
 """An extract script for the plant health monitoring ETL pipeline."""
 
 from os import environ as ENV
-import json
 import csv
 from dotenv import load_dotenv
 import requests

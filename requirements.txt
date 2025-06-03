@@ -1,0 +1,7 @@
+pytest
+pylint
+python-dotenv
+ipykernel
+altair
+streamlit
+awswrangler

@@ -7,3 +7,5 @@ altair
 streamlit
 awswrangler
 logging
+pandas
+altair

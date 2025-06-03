@@ -1,50 +1,85 @@
 """An extract script for the plant health monitoring ETL pipeline."""
-import os
+
 from os import environ as ENV
 import json
 import csv
-import logging
 from dotenv import load_dotenv
 import requests
 
+from log import get_logger, set_logger
 
-def fetch_data(url, plant_id: int) -> json:
+
+def fetch_data(base_url, plant_id: int) -> json:
     """Connects to the api and returns the data as json"""
+    logger = get_logger()
     logger.info("Connecting to API...")
-    url = url + str(plant_id)
-    response = requests.get(url)
+    base_url = base_url + str(plant_id)
+    response = requests.get(base_url, timeout=10)
     data = response.json()
-    if data.get('error'):
-        print(data['error'])
-    if not response:
-        logger.warning("Plant has no data.")
-        raise ValueError(f"Plant {plant_id} has no data.")
-
+    logger.info("Received response for plant %s.", plant_id)
     return data
 
 
-def get_all_plants(url):
-    """Collects all the plants per minute."""
+def get_all_plants(base_url: str) -> list[dict]:
+    """Collects all the plant data and returns as a dataframe."""
+    logger = get_logger()
+    if not isinstance(base_url, str):
+        raise TypeError("Please use a valid url.")
 
-    """
-    if plant not found in the response
-    we raise error
-    
-    """
     logger.info("Collating plants...")
-    pass
+    list_of_plants = []
+
+    plant_id = 1  # Start index from 1
+    not_found_count = 0  # How many plants not found in a row
+    not_found_limit = 5  # Limit on when to halt while loop, when not finding plants
+
+    while True:
+        json_data = fetch_data(base_url, plant_id)
+        if json_data.get('error'):
+            error_msg = json_data['error']
+            if error_msg == 'plant not found':
+                not_found_count += 1
+            else:  # other error (sensor malfunction)
+                not_found_count = 0
+            logger.warning(
+                "Plant %s data returned an error message: %s", plant_id, error_msg)
+        else:
+            logger.info(
+                "Plant %s data successfully saved.", plant_id)
+            list_of_plants.append(json_data)
+        if not_found_count >= not_found_limit:
+            break
+        plant_id += 1
+    return list_of_plants
 
 
-def save_to_csv(data, filename="data/output.csv"):
+def save_to_csv(plants_list: list[dict], filename="data/output.csv") -> None:
     """Saves data to a local output csv file."""
-    pass
+    logger = get_logger()
+
+    if not isinstance(plants_list, list):
+        raise TypeError("Please use a list of dictionaries.")
+
+    logger.info("Updating data keys.")
+    all_keys = set()
+
+    for plant in plants_list:
+        all_keys.update(plant.keys())
+
+    keys = sorted(all_keys)
+    logger.info("Saving plant data to %s...", filename)
+
+    with open(filename, 'w', newline='', encoding='utf-8') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(plants_list)
+    logger.info("Successfully wrote data to %s!", filename)
 
 
 if __name__ == "__main__":
-    logger = logging.getLogger()
-    logger.setLevel("INFO")
+    set_logger()
     load_dotenv()
 
     url = ENV["BASE_URL"]
-    json_data = fetch_data(url, 43)
-    print(json_data)
+    plant_data = get_all_plants(url)
+    save_to_csv(plant_data)

@@ -13,12 +13,13 @@ def fetch_data(url, plant_id: int) -> json:
     logger.info("Connecting to API...")
     url = url + str(plant_id)
     response = requests.get(url)
+    data = response.json()
+    if data.get('error'):
+        print(data['error'])
     if not response:
         logger.warning("Plant has no data.")
         raise ValueError(f"Plant {plant_id} has no data.")
-    data = response.json()
-    if data.get('error'):
-        print('hi im an error')
+
     return data
 
 
@@ -45,5 +46,5 @@ if __name__ == "__main__":
     load_dotenv()
 
     url = ENV["BASE_URL"]
-    json_data = fetch_data(10)
+    json_data = fetch_data(url, 43)
     print(json_data)

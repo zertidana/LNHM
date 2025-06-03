@@ -1,7 +1,9 @@
 pytest
 pylint
 python-dotenv
+requests
 ipykernel
 altair
 streamlit
 awswrangler
+logging

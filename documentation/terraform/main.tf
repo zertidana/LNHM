@@ -1,4 +1,4 @@
-###################### Cloud Provisions ############################
+##################### Cloud Provisions #################
 provider "aws" {
     region = var.AWS_REGION
     access_key = var.AWS_ACCESS_KEY_ID
@@ -28,7 +28,7 @@ data "aws_ecr_image" "lambda-image-version" {
     image_tag       = "latest"
 }
 
-###################### ECS ############################
+####################### ECS ##########################
 
 resource "aws_ecs_task_definition" "etl_task" {
     
@@ -60,7 +60,7 @@ resource "aws_ecs_task_definition" "etl_task" {
     ])
 }
 
-###################### Lambda ############################
+######################### Lambda ##########################
 data "aws_iam_policy_document" "lambda-role-trust-policy-doc" {
     statement {
       effect = "Allow"
@@ -127,7 +127,7 @@ resource "aws_lambda_function" "raffles-alert-lambda" {
     }
 }
 
-###################### S3 ############################
+###################### S3 ##########################
 resource "aws_s3_bucket" "archive_data_bucket" {
     bucket = "c17-raffles-lnhm-bucket"
     force_destroy = true
@@ -141,9 +141,4 @@ resource "aws_s3_object" "input" {
 resource "aws_s3_object" "output_directory" {
     bucket  = aws_s3_bucket.archive_data_bucket.id
     key     = "output/"
-}
-
-###################### Glue ############################
-resource "aws_glue_catalog_database" "glue_catalogue_database" {
-  name = "c17-raffles-glue-catalogue-database"
 }

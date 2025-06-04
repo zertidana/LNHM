@@ -1,0 +1,7 @@
+python-dotenv
+requests
+requests-mock
+pandas
+sqalchemy
+pytest
+pylint

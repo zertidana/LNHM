@@ -1,5 +1,7 @@
 """Standardisation and normalisation of the plant data in csv before loading to DB."""
 
+import datetime
+
 import pandas as pd
 import numpy as np
 
@@ -49,19 +51,23 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
 
 
 def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
-                          file_path: str = 'data/normalised_output.csv') -> None:
-    """Create new normalised csv file."""
+                          file_path_minute: str = 'data/normalised_minute_output.csv',
+                          file_path_day: str = 'data/normalised_day_output.csv') -> None:
+    """Save current minute dataframe to:
+    1. A new normalised csv file representing the minute. This is used directly by transform.py.
+    2. A csv file representing the whole day. This is used later by long-term data to summarise the day."""
     logger = get_logger()
 
-    if not isinstance(file_path, str):
-        raise TypeError("Please use a string for your filename.")
-    if file_path[-4:] != ".csv":
-        raise ValueError("Please end your filename in .csv.")
+    for file_path in [file_path_minute, file_path_day]:
+        if not isinstance(file_path, str):
+            raise TypeError("Please use a string for your filename.")
+        if file_path[-4:] != ".csv":
+            raise ValueError("Please end your filename in .csv.")
 
-    logger.info("Saving normalised plant data to %s...", file_path)
-
-    output_dataframe.to_csv(file_path, index=False)
-
+    # For file_path_minute, overwrite existing file
+    logger.info("Saving cleaned plant data at %s to %s...",
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), file_path_minute)
+    output_dataframe.to_csv(file_path_minute, index=False)
     logger.info("Successfully wrote data to %s!", file_path)
 
 

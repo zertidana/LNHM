@@ -12,7 +12,7 @@ def insert_transformed_data() -> None:
     logger = get_logger()
 
     logger.info("Loading local recent data...")
-    transformed_data = load_csv_data()
+    transformed_data = load_csv_data('data/normalised_minute_output.csv')
     logger.info("Successfully loaded recent data!")
 
     logger.info("Inserting data into database setup...")

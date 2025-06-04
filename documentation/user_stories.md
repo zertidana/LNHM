@@ -45,7 +45,7 @@
 **I want** daily plant health summaries archived for historical analysis  
 **So that** I can study long-term trends and seasonal patterns 
 
-**As the* Head of visitor safety
+**As the** Head of visitor safety
 **I want** to monitor temperatures of the greenhouse over time
 **So that** I can ensure that the temperature remains within museum regulations
 

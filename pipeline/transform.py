@@ -18,7 +18,8 @@ def load_data(file_path: str = 'data/output.csv') -> pd.DataFrame:
 
 
 def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
-    """Cleans the dataframe."""
+    """Filters selected columns from the initial dataframe
+    that we need for the FACT update every minute."""
     logger = get_logger()
     logger.info("Loading data from file path...")
     try:
@@ -28,32 +29,13 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
     logger.info("Data successfully loaded!")
 
     logger.info("Checking data columns..")
-    new_dataframe = input_dataframe[
-        'plant_id': 'plant_id'
-        'temperature': 'temperature',
-        'soil_moisture': 'soil_moisture',
-        'recording_taken': 'recording_taken',
-        'last_watered': 'last_watered'
-    ]
-    new_dataframe = new_dataframe[['plant_id', 'temperature',
-                                   'soil_moisture', 'recording_taken',
-                                   'last_watered']]
 
-    """
-    CHECK FOR NULL VALUES every single one of these needs to be included (NOT NULL)
-    Throw critical notification if <30% moisture (to do with email/SNS)
+    new_dataframe = input_dataframe[['recording_taken', 'plant_id',
+                                    'temperature', 'soil_moisture',
+                                     'last_watered']].copy()
+    new_dataframe = new_dataframe.dropna()
 
-    plant_id = int
-    temperature = float
-    soil_moisture = float
-    recording_taken = timestamptz
-    last_watered = timestamptz
-
-    Check manually for each, if they don't fit into those
-    Skip the row
-    """
-
-    logger.info("Dataframe successfully normalised!")
+    logger.info("Dataframe successfully filtered!")
 
     return new_dataframe
 
@@ -65,4 +47,4 @@ def dataframe_to_csv(file_path: str = 'data/normalised_output.csv') -> None:
 
 if __name__ == "__main__":
     set_logger()
-    clean_dataframe()
+    print(clean_dataframe())

@@ -1,15 +1,18 @@
 # 🚰 ETL Pipeline
 
-## 📁 Files
+## 📁 File Structure
 
-`extract.py` - Connects to the base url, collates all plants and saves this data as a CSV file.  
-`transform.py` - Standardization and normalization of the plant data in csv before loading to DB.   
-`load.py` - Loads all of the clean data to the database.  
+`extract.py` 
+- Connects to the plant endpoints of the API
+- Collates all plant data together
+- Saves the plant data as a CSV file.
 
-`analyse.ipynb` - Further extraction of the data to further the understanding of data.
+`transform.py` 
+- Standardises and normalises the extracted data into a new .csv file.
 
-## Instructions
+`load.py` 
+- Loads all of the cleaned data to the Microsoft SQL server database using a batch engine function.  
 
-
-
+`analyse.ipynb` 
+- Further extraction of the data to further the understanding of data.
 

@@ -1,7 +1,12 @@
 pytest
 pylint
 python-dotenv
+requests
 ipykernel
 altair
 streamlit
-awswrangler
+logging
+pandas
+altair
+requests_mock
+boto3

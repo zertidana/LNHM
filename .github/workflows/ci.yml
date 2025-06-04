@@ -16,12 +16,9 @@ jobs:
           cache: 'pip'
       - name: Install packages from requirements.txt
         run: pip install -r requirements.txt
-      
-      - name: Run pytest
-        run: |
-         pylint $(git ls-files '*.py') -v
-  lint: 
+  lint:
     runs-on: ubuntu-latest
+    needs: install-dependencies
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -32,3 +29,19 @@ jobs:
       - name: Analysing the code with pylint
         run: |
           pylint $(git ls-files '*.py') --fail-under=8.5
+
+  pytest:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install packages
+        run: pip install -r requirements.txt

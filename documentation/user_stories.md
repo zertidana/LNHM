@@ -25,28 +25,30 @@
 ------
 
 ## Story 3: Plant Health Short-Term Data Storage
-**As a** museum manager  
+**As a** Exhibitions manager  
 **I want** the past 24 hours of plant readings stored in an accessible database  
-**So that** staff can review recent plant health trends  
+**So that** staff can review recent plant health trends   
 
 **Acceptance Criteria:**
 - All plant readings stored in database
 - Data includes all relevant fields from API response 
 - Readings older than 24 hours are automatically removed and archived
 - Database queries return results in under 2 seconds
-
 ---
 
 ## Story 4: Plant Health Long-Term Data Storage
 **As a** botanical researcher  
 **I want** daily plant health summaries archived for historical analysis  
-**So that** I can study long-term trends and seasonal patterns  
+**So that** I can study long-term trends and seasonal patterns 
+
+**As the** Head of visitor safety  
+**I want** to monitor the temperature of the greenhouse over time  
+**So that** I can ensure that the temperature remains within museum regulations
 
 **Acceptance Criteria:**
 - Daily summaries created with min/max/avg temperatures and moisture per plant
 - Summaries stored in cost-effective cloud storage (S3)
-- Archive process runs automatically each evening
-
+- Archive process runs automatically each evening.
 ---
 
 ## Story 5: Plant Health Real-Time Dashboard

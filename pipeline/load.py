@@ -46,15 +46,6 @@ def insert_transformed_data() -> None:
 
     logger.info("Inserting data into database setup...")
 
-    """
-    driver=ENV["DB_DRIVER"],
-                          server=ENV["DB_HOST"],
-                          database=ENV["DB_NAME"],
-                          TrustServerCertificate='yes',
-                          UID=ENV["DB_USER"],
-                          PWD=ENV["DB_PASSWORD"],)
-    """
-
     engine = sqlalchemy.create_engine(
         f'mssql+pyodbc://{ENV["DB_USER"]}:{ENV["DB_PASSWORD"]}@{ENV['DB_HOST']}/{ENV['DB_NAME']}?driver={ENV['DB_DRIVER']}',
         connect_args={'connect_timeout': 10, 'TrustServerCertificate': 'yes'},

@@ -44,7 +44,7 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
     new_dataframe = new_dataframe[pd.to_numeric(
         new_dataframe['soil_moisture'], errors='coerce').notnull()]
 
-    """GET RID OF MINUS VALUES"""
+    # GET RID OF MINUS VALUES.
 
     # Column type conversion
     new_dataframe['recording_taken'] = pd.to_datetime(

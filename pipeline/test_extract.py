@@ -5,7 +5,7 @@
 import pytest
 from pytest import mark
 from unittest.mock import patch, mock_open
-from extract import get_request, fetch_data, save_to_csv, get_all_plants
+from extract import PlantAPIClient, save_to_csv
 from dotenv import load_dotenv
 import requests
 import requests_mock
@@ -21,20 +21,21 @@ get_request: gets request from URL
 
 def test_get_request_invalid_type():
     """Checks for an invalid type in get_request."""
+    client = PlantAPIClient("http://testapi.com/")
     with pytest.raises(TypeError) as exc:
-        get_request(23)
+        client.get_request(23)
     assert str(exc.value) == 'Invalid URL type.'
 
 
 def test_get_request_valid_type(requests_mock):
     """Checks for an valid type in get_request."""
-    test_url = 'https://test.co.uk'
-    requests_mock.get(test_url, json={'plant_id': '233'})
-    assert type(get_request(test_url)) == dict
+    client = PlantAPIClient("http://testapi.com/")
+    requests_mock.get(client.base_url, json={'plant_id': '233'})
+    assert type(client.get_request(client.base_url)) == dict
 
 
 """
-fetch data - connects to API using get_request, 
+fetch data - connects to API using get_request,
 and converts the data as json and returns according to plant id
 url, plant_id
 """
@@ -86,27 +87,30 @@ def plant_not_found():
 
 def test_fetch_data_invalid_type_url():
     """Checks if url in fetch_data is a valid type."""
+    client = PlantAPIClient(23)
     with pytest.raises(TypeError) as exc:
-        fetch_data(23, 1)
+        client.fetch_data(1)
     assert str(exc.value) == 'Invalid URL type.'
 
 
 def test_fetch_data_invalid_type_plant_id():
     """Checks if plant_id in fetch_data is a valid type."""
+    client = PlantAPIClient("http://testapi.com/")
     with pytest.raises(TypeError) as exc:
-        fetch_data("URL", "Crazy")
+        client.fetch_data("Crazy")
     assert str(exc.value) == 'Invalid plant_id type.'
 
 
-@patch('extract.get_request')
+@patch('extract.PlantAPIClient.get_request')
 def test_fetch_data_valid(fake_plant_request, plant_33):
-    """Passes correct type data to fetch_data() and checks:
-    if it returns a dictionary object,
-    if it returns something exactly the same as plant 33 (mocked into get_request)"""
-    fake_plant_request_value = plant_33
-    fake_plant_request.return_value = fake_plant_request_value
-    assert type(fetch_data('fake_url_but_string', 1)) == dict
-    assert fetch_data('fake_url_but_string', 1) == plant_33
+    """Test fetch_data returns correct data type and content"""
+    client = PlantAPIClient("http://testapi.com/")
+    fake_plant_request.return_value = plant_33
+
+    result = client.fetch_data(1)
+
+    assert isinstance(result, dict)
+    assert result == plant_33
 
 
 """
@@ -117,57 +121,36 @@ terminates when 5 in a row return ‘not found’
 
 def test_get_all_plants_invalid_type_url():
     """Check if URL is raised if wrong type."""
+    client = PlantAPIClient(5)
     with pytest.raises(TypeError) as exc:
-        get_all_plants(5)
+        client.get_all_plants()
     assert str(exc.value) == 'Please use a valid url.'
 
 
 def test_get_all_plants_invalid_type_not_found_limit():
     """Check if not_found_limit is raised if wrong type."""
+    client = PlantAPIClient("http://testapi.com/", "imnotvalid")
     with pytest.raises(TypeError) as exc:
-        get_all_plants("pretendthisisvalid", "imnotvalid")
+        client.get_all_plants()
     assert str(exc.value) == 'Please use a valid int value.'
 
 
-@patch('extract.get_request')
+@patch('extract.PlantAPIClient.get_request')
 def test_get_all_plants_terminates_after_5_loops(fake_get_request, plant_not_found):
-    """Test if get_all_plants terminates immediately 
-    after 5 responses with 'error: plant not found' 
+    """Test if get_all_plants terminates immediately
+    after 5 responses with 'error: plant not found'
     list it returns should also be empty?"""
-    fake_get_request_value = plant_not_found
-    fake_get_request.return_value = fake_get_request_value
-    returned_value = get_all_plants("pretendthisisvalid")
-    print(len(returned_value))
-    assert False
-
-
-def test_get_all_plants_returns_list_len_5():
-    """Test if get_all_plants returns a list of len(5)
-    when passed responses with 5 regular, 5 error"""
-    assert False
-
-
-def test_get_all_plants_returns_list_len_5():
-    """Test if get_all_plants returns len(4) 
-    and plant_id = 12 
-    when passed responses with:
-    (3 responses with data, 2 errors, 
-    1 error that is not plant not found, 
-    1 with data, 5 with not found
-    """
-    assert False
+    client = PlantAPIClient("http://testapi.com/")
+    fake_get_request.return_value = plant_not_found
+    returned_value = client.get_all_plants()
+    assert len(returned_value) == 0
+    assert type(returned_value) == list
+    assert fake_get_request.call_count == 5
 
 
 """
 
 save_to_csv - takes a list of dictionaries and saves to a csv file
-
-5 tests
-check for type plants_list
-check filename is not empty
-check filename ends in .csv
-check filename is str type
-mock writing to csv and check that function executed?
 
 """
 
@@ -191,8 +174,3 @@ def test_save_to_csv_invalid_format_filename_or_empty():
     with pytest.raises(ValueError) as exc:
         save_to_csv([{"example": "yep"}], "cool")
     assert str(exc.value) == "Please end your filename in .csv."
-
-
-def test_save_to_csv_mock_writing_to_csv():
-    """Tests that the csv has written to csv (magic mock)"""
-    assert False

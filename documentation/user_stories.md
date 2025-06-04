@@ -29,7 +29,7 @@
 **I want** the past 24 hours of plant readings stored in an accessible database  
 **So that** staff can review recent plant health trends 
 
-**As a** botanical researcher  
+**As a** botanical researcher
 **I want** to be notified if my plants are under environmental stress
 **So that** I can tailor the conditions to keep my plants remain healthy  
 

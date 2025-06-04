@@ -1,57 +1,52 @@
-DROP TABLE IF EXISTS DIM_country CASCADE;
-DROP TABLE IF EXISTS DIM_origin_location CASCADE;
-DROP TABLE IF EXISTS DIM_botanist CASCADE;
-DROP TABLE IF EXISTS DIM_plant CASCADE;
-DROP TABLE IF EXISTS FACT_plant_health CASCADE;
+DROP TABLE IF EXISTS FACT_plant_health;
+DROP TABLE IF EXISTS DIM_plant;
+DROP TABLE IF EXISTS DIM_botanist;
+DROP TABLE IF EXISTS DIM_origin_location;
+DROP TABLE IF EXISTS DIM_country;
+
 
 CREATE TABLE DIM_country (
-    country_id SMALLINT GENERATED ALWAYS AS IDENTITY,
+    country_id SMALLINT IDENTITY(1,1) PRIMARY KEY,
     country_name VARCHAR(255) NOT NULL,
-    PRIMARY KEY(country_id)
 );
 
 CREATE TABLE DIM_origin_location (
-    location_id SMALLINT GENERATED ALWAYS AS IDENTITY,
+    location_id SMALLINT IDENTITY(1,1) PRIMARY KEY,
     longitude FLOAT,
     latitude FLOAT,
     city VARCHAR(55),
     country_id SMALLINT,
-    PRIMARY KEY(location_id),
-    FOREIGN KEY (country_id) REFERENCES country(country_id)
+    FOREIGN KEY (country_id) REFERENCES DIM_country(country_id)
 );
 
 CREATE TABLE DIM_botanist (
-    botanist_id SMALLINT GENERATED ALWAYS AS IDENTITY,
+    botanist_id SMALLINT IDENTITY(1,1) PRIMARY KEY,
     botanist_name VARCHAR(55),
     email VARCHAR(255),
-    phone VARCHAR(20),
-    PRIMARY KEY(botanist_id)
+    phone VARCHAR(30),
 );
 
 CREATE TABLE DIM_plant (
-    plant_id SMALLINT GENERATED ALWAYS AS IDENTITY,
+    plant_id SMALLINT IDENTITY(1,1) PRIMARY KEY,
     plant_name VARCHAR(255),
     scientific_name VARCHAR(255),
-    regular_url TEXT,
+    regular_url VARCHAR(MAX),
     botanist_id SMALLINT,
     location_id SMALLINT,
-    PRIMARY KEY(plant_id),
-    FOREIGN KEY (botanist_id) REFERENCES botanist(botanist_id),
-    FOREIGN KEY (location_id) REFERENCES location(location_id)
+    FOREIGN KEY (botanist_id) REFERENCES DIM_origin_location(location_id)
 );
 
 CREATE TABLE FACT_plant_health (
-    plant_health_id SMALLINT GENERATED ALWAYS AS IDENTITY,
+    plant_health_id SMALLINT IDENTITY(1,1) PRIMARY KEY,
     temperature FLOAT,
     soil_moisture FLOAT,
-    recording_taken TIMESTAMP,
-    last_watered TIMESTAMP,
+    recording_taken DATETIME2,
+    last_watered DATETIME2,
     plant_id SMALLINT,
-    PRIMARY KEY(plant_health_id),
-    FOREIGN KEY (plant_id) REFERENCES plant(plant_id)
+    FOREIGN KEY (plant_id) REFERENCES DIM_plant(plant_id)
 );
 
-INSERT INTO country (name) VALUES
+INSERT INTO DIM_country (country_name) VALUES
 ('Albania'),
 ('American Samoa'),
 ('Antigua and Barbuda'),
@@ -96,7 +91,7 @@ INSERT INTO country (name) VALUES
 ('Western Sahara'),
 ('Yemen');
 
-INSERT INTO location (longitude, latitude, city, country_id) VALUES
+INSERT INTO DIM_origin_location (longitude, latitude, city, country_id) VALUES
 (-11.5098, 43.74, 'Stammside', 1),
 (-48.7087, 47.8428, 'Floshire', 2),
 (-36.1349, -25.4878, 'Dale City', 25),
@@ -147,7 +142,7 @@ INSERT INTO location (longitude, latitude, city, country_id) VALUES
 (18.6216, -62.6313, 'Joanyland', 3);
 
 
-INSERT INTO botanist (botanist_name, email, phone) VALUES
+INSERT INTO DIM_botanist (botanist_name, email, phone) VALUES
 ('Santiago Ortiz', 'santiago.ortiz@lnhm.co.uk', '(770) 924-1572 x884'),
 ('Lindsay Feest', 'lindsay.feest@lnhm.co.uk', '(590) 404-7387 x7681'),
 ('Helen Waters', 'helen.waters@lnhm.co.uk', '1-520-943-3657 x23140'),
@@ -198,7 +193,7 @@ INSERT INTO botanist (botanist_name, email, phone) VALUES
 ('Irma Ortiz Jr.', 'irma.ortiz.jr.@lnhm.co.uk', '(456) 348-3790 x868');
 
 
-INSERT INTO plant (plant_name, scientific_name, regular_url, botanist_id, location_id) VALUES
+INSERT INTO DIM_plant (plant_name, scientific_name, regular_url, botanist_id, location_id) VALUES
 ('Venus flytrap', 'NULL', NULL, 47, 1),
 ('Corpse flower', 'NULL', NULL, 16, 2),
 ('Rafflesia arnoldii', 'NULL', NULL, 36, 3),

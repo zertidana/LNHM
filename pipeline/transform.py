@@ -1,7 +1,6 @@
 """Standardisation and normalisation of the plant data in csv before loading to DB."""
 
 import pandas as pd
-import numpy as np
 
 from log import get_logger, set_logger
 
@@ -30,45 +29,47 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
         raise exc
     logger.info("Data successfully loaded!")
 
-    logger.info("Checking data columns..")
-
+    logger.info("Extracting and normalising data columns..")
     new_dataframe = input_dataframe[['recording_taken', 'plant_id',
                                     'temperature', 'soil_moisture',
                                      'last_watered']].copy()
-    new_dataframe = new_dataframe.dropna()  # skip rows if any values are null
+    new_dataframe = new_dataframe.dropna()  # skip rows if ANY values are null
 
     # On numeric columns convert all chars that aren't numbers to null and then remove them
-    new_dataframe[pd.to_numeric(
+    new_dataframe = new_dataframe[pd.to_numeric(
         new_dataframe['plant_id'], errors='coerce').notnull()]
-    new_dataframe[pd.to_numeric(
+    new_dataframe = new_dataframe[pd.to_numeric(
         new_dataframe['temperature'], errors='coerce').notnull()]
-    new_dataframe[pd.to_numeric(
+    new_dataframe = new_dataframe[pd.to_numeric(
         new_dataframe['soil_moisture'], errors='coerce').notnull()]
 
-    try:
-        if new_dataframe['recording_taken'].dtype != 'timestamptz':
-            print("BAD")
+    # Column type conversion
+    new_dataframe['recording_taken'] = pd.to_datetime(
+        new_dataframe["recording_taken"])
+    new_dataframe['last_watered'] = pd.to_datetime(
+        new_dataframe["last_watered"])
 
-        if new_dataframe['last_watered'].dtype != 'timestamptz':
-            print("BAD")
-    except:
-        print("Conversion error")
-        raise ValueError
-
-    logger.info("Dataframe successfully filtered!")
-
-    """
-    Throw critical notification if <30% moisture (to do with email/SNS)
-    """
-
+    logger.info("Dataframe successfully filtered/converted!")
     return new_dataframe
 
 
-def dataframe_to_csv(file_path: str = 'data/normalised_output.csv') -> None:
+def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
+                          file_path: str = 'data/normalised_output.csv') -> None:
     """Create new normalised csv file."""
-    return None
+    logger = get_logger()
+
+    if not isinstance(file_path, str):
+        raise TypeError("Please use a string for your filename.")
+    if file_path[-4:] != ".csv":
+        raise ValueError("Please end your filename in .csv.")
+
+    logger.info("Saving normalised plant data to %s...", file_path)
+
+    output_dataframe.to_csv(file_path, index=False)
+
+    logger.info("Successfully wrote data to %s!", file_path)
 
 
 if __name__ == "__main__":
     set_logger()
-    print(clean_dataframe())
+    save_dataframe_to_csv(clean_dataframe())

@@ -30,9 +30,10 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
     logger.info("Data successfully loaded!")
 
     logger.info("Extracting and normalising data columns..")
-    new_dataframe = input_dataframe[['recording_taken', 'plant_id',
-                                    'temperature', 'soil_moisture',
-                                     'last_watered']].copy()
+
+    new_dataframe = input_dataframe[['temperature', 'soil_moisture',
+                                    'recording_taken', 'last_watered',
+                                     'plant_id']].copy()
     new_dataframe = new_dataframe.dropna()  # skip rows if ANY values are null
 
     # On numeric columns convert all chars that aren't numbers to null and then remove them
@@ -42,6 +43,8 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
         new_dataframe['temperature'], errors='coerce').notnull()]
     new_dataframe = new_dataframe[pd.to_numeric(
         new_dataframe['soil_moisture'], errors='coerce').notnull()]
+
+    # GET RID OF MINUS VALUES.
 
     # Column type conversion
     new_dataframe['recording_taken'] = pd.to_datetime(

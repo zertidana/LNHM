@@ -18,6 +18,7 @@ class PlantAPIClient:
 
     @property
     def base_url(self) -> str:
+        """Returns the base url."""
         return self._base_url
 
     @base_url.setter
@@ -28,6 +29,7 @@ class PlantAPIClient:
 
     @property
     def not_found_limit(self) -> int:
+        """Returns not found limit."""
         return self._not_found_limit
 
     @not_found_limit.setter

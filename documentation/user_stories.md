@@ -42,7 +42,7 @@
 **So that** I can study long-term trends and seasonal patterns 
 
 **As the** Head of visitor safety  
-**I want** to monitor temperatures of the greenhouse over time  
+**I want** to monitor the temperature of the greenhouse over time  
 **So that** I can ensure that the temperature remains within museum regulations
 
 **Acceptance Criteria:**

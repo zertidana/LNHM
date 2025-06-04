@@ -27,11 +27,7 @@
 ## Story 3: Plant Health Short-Term Data Storage
 **As a** Exhibitions manager  
 **I want** the past 24 hours of plant readings stored in an accessible database  
-**So that** staff can review recent plant health trends 
-
-**As a** botanical researcher
-**I want** to be notified if my plants are under environmental stress
-**So that** I can tailor the conditions to keep my plants remain healthy  
+**So that** staff can review recent plant health trends   
 
 **Acceptance Criteria:**
 - All plant readings stored in database
@@ -45,8 +41,8 @@
 **I want** daily plant health summaries archived for historical analysis  
 **So that** I can study long-term trends and seasonal patterns 
 
-**As the** Head of visitor safety
-**I want** to monitor temperatures of the greenhouse over time
+**As the** Head of visitor safety  
+**I want** to monitor temperatures of the greenhouse over time  
 **So that** I can ensure that the temperature remains within museum regulations
 
 **Acceptance Criteria:**

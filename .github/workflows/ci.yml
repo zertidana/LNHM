@@ -19,7 +19,7 @@ jobs:
       
       - name: Run pytest
         run: |
-         pylint $(git ls-files '*.py') -v
+         pytest pipeline/*.py
   lint: 
     runs-on: ubuntu-latest
     steps:

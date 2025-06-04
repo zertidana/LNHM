@@ -36,7 +36,7 @@ CREATE TABLE DIM_plant (
     FOREIGN KEY (botanist_id) REFERENCES DIM_origin_location(location_id)
 );
 
-CREATE TABLE FACT_plant_health (
+CREATE TABLE FACT_plant_reading (
     plant_health_id SMALLINT IDENTITY(1,1) PRIMARY KEY,
     temperature FLOAT,
     soil_moisture FLOAT,

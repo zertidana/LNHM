@@ -8,8 +8,7 @@ from utilities import get_logger, set_logger, load_csv_data
 
 
 def insert_transformed_data() -> None:
-    """Function that calls connect function, and inserts into the Microsoft SQL database
-    T-SQL format?"""
+    """Function that calls connect function, and inserts into the Microsoft SQL database"""
     logger = get_logger()
 
     logger.info("Loading local recent data...")

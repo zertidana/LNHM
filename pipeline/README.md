@@ -3,9 +3,10 @@
 ## 📁 File Structure
 
 `extract.py` 
-- Connects to the API contained at the base url
+- Connects to the plant endpoints of the API
 - Collates all plant data together
-- Saves this data as a CSV file.
+- Saves the plant data as a CSV file.
+
 
 Functions:
 
@@ -15,8 +16,7 @@ Functions:
 - `save_to_csv` -> Saves the list of dictionaries directly to a .csv file.
 
 `transform.py` 
-- Standardization and normalization of the plant data in .csv
-- Resaves to normalised .csv
+- Standardises and normalises the plant data in a .csv
 
 Functions:
 - `load_data` -> Loads data from .csv into pandas dataframe.
@@ -30,6 +30,4 @@ Functions:
 - `insert_transformed_data` -> Inserts data in minute .csv **directly** into Microsoft SQL server using batch engine function.
 
 `analyse.ipynb` - Further extraction of the data to further the understanding of data.
-
-## .env
 

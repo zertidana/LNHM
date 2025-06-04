@@ -14,5 +14,3 @@ The environment setup is as follows in an .env file:
 - `DB_PASSWORD`
 - `DB_NAME`
 - `DB_SCHEMA`
-
-## Why the coaches are FANTASTIC (??)

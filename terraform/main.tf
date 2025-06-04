@@ -24,7 +24,7 @@ resource "aws_ecr_repository" "ecr-repo" {
 }
 
 data "aws_ecr_image" "lambda-image-version" {
-    repository_name = data.aws_ecr_repository.ecr-repo.name
+    repository_name = aws_ecr_repository.ecr-repo.name
     image_tag       = "latest"
 }
 
@@ -78,12 +78,49 @@ resource "aws_ecs_task_definition" "etl_task-definition" {
         }
         }
     ])
+    runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+    }
+}
+
+resource "aws_iam_role" "ecs_task_role" {
+    name = "c17-raffles-etl-task-role"
+    assume_role_policy = jsonencode({
+        version   = "2012-10-17"
+        statement = [{
+            effect = "Allow"
+            principal = {
+                service = "ecs-tasks.amazonaws.com"
+            },
+            action = "sts:AssumeRole"
+        }]
+    })
+}
+
+resource "aws_iam_policy" "ecs_task_policy" {
+    name = "ecs-task-can-invoke-lambda"
+    policy = jsonencode({
+        version   = "2012-10-17"
+        statement = [
+            {
+                effect   = "Allow",
+                action   = "lambda:InvokeFunction",
+                resource = aws_lambda_function.raffles-alert-lambda.arn
+            }
+        ]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_ecs_task_policy" {
+    role       = aws_iam_role.ecs_task_role.name
+    policy_arn = aws_iam_policy.ecs_task_policy.arn
 }
 
 resource "aws_ecs_service" "ecs-service" {
     name            = "c17-raffles-etl-service"
     cluster         = var.ECS_CLUSTER_ID
-    task_definition = aws_ecs_task_definition.etl_task.arn
+    task_definition = aws_ecs_task_definition.etl_task-definition.arn
     desired_count   = 1
     launch_type     = "EC2"
 
@@ -106,12 +143,23 @@ data "aws_iam_policy_document" "lambda-role-trust-policy-doc" {
         identifiers = [ "lambda.amazonaws.com" ]
       }
       actions = [
+        "sts:AssumeRole"
+      ]
+    }
+}
+
+# Permissions doc (what are you allowed to do?)
+data "aws_iam_policy_document" "lambda-role-permissions-policy-doc" {
+    statement {
+      effect = "Allow"
+      actions = [
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
         "logs:PutLogEvents",
       ]
-      resources = [ "arn:aws:logs:eu-west-2:129033205317:*" ] # Do we need our own here?
+      resources = [ "arn:aws:logs:eu-west-2:129033205317:*" ]
     }
+
     statement {
       effect = "Allow"
       actions = [
@@ -155,10 +203,6 @@ resource "aws_lambda_function" "raffles-alert-lambda" {
     timeout = 120
     environment {
         variables = {
-            AWS_REGION_NAME = "eu-west-2", # Obviously we'll change these / extract them out into tfvars
-            ATHENA_DB_NAME = "c17-xac-trucks-db",
-            ATHENA_OUTPUT_LOCATION = "s3:/athena/output/",
-            TARGET_BUCKET_NAME = "c17-xac-trucks",
 
         }
     }

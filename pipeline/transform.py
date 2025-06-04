@@ -1,4 +1,4 @@
-"""Standardization and normalization of the plant data in csv before loading to DB."""
+"""Standardisation and normalisation of the plant data in csv before loading to DB."""
 
 import pandas as pd
 

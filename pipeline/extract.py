@@ -8,71 +8,93 @@ import requests
 from log import get_logger, set_logger
 
 
-def get_request(base_url: str) -> dict:
-    """Get request from a given URL string."""
-    logger = get_logger()
-    if not isinstance(base_url, str):
-        logger.critical("Invalid URL type.")
-        raise TypeError("Invalid URL type.")
-    try:
-        request = requests.get(base_url, timeout=10)
-        return request.json()
-    except requests.exceptions.Timeout as exc:
-        logger.critical("Request timed out.")
-        raise exc
+class PlantAPIClient:
+    """Client for retrieving plant health data from API."""
 
+    def __init__(self, base_url: str, not_found_limit: int = 5):
+        self.logger = get_logger()
+        self._base_url = base_url
+        self._not_found_limit = not_found_limit
 
-def fetch_data(base_url: str, plant_id: int) -> dict:
-    """Connects to the api and returns the data as json"""
-    logger = get_logger()
-    logger.info("Connecting to API...")
+    @property
+    def base_url(self) -> str:
+        return self._base_url
 
-    if not isinstance(base_url, str):
-        logger.critical("Invalid URL type.")
-        raise TypeError("Invalid URL type.")
-    if not isinstance(plant_id, int):
-        logger.critical("Invalid plant_id type.")
-        raise TypeError("Invalid plant_id type.")
+    @base_url.setter
+    def base_url(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError("base_url must be a string.")
+        self._base_url = value
 
-    base_url = base_url + str(plant_id)
-    data = get_request(base_url)
-    logger.info("Received response for plant %s.", plant_id)
-    return data
+    @property
+    def not_found_limit(self) -> int:
+        return self._not_found_limit
 
+    @not_found_limit.setter
+    def not_found_limit(self, value: int):
+        if not isinstance(value, int):
+            raise TypeError("not_found_limit must be an integer.")
+        self._not_found_limit = value
 
-def get_all_plants(base_url: str, not_found_limit: int = 5) -> list[dict]:
-    """Collects all the plant data and returns as a dataframe."""
-    logger = get_logger()
-    logger.info("Collating plants...")
-    if not isinstance(base_url, str):
-        logger.critical("URL is invalid. Aborting.")
-        raise TypeError("Please use a valid url.")
-    if not isinstance(not_found_limit, int):
-        logger.critical("Not found limit is invalid. Aborting.")
-        raise TypeError("Please use a valid int value.")
+    def get_request(self, base_url: str) -> dict:
+        """Get request from a given URL string."""
+        if not isinstance(base_url, str):
+            self.logger.critical("Invalid URL type.")
+            raise TypeError("Invalid URL type.")
+        try:
+            response = requests.get(base_url, timeout=10)
+            return response.json()
+        except requests.exceptions.Timeout as exc:
+            self.logger.critical("Request timed out.")
+            raise exc
 
-    list_of_plants = []
+    def fetch_data(self, plant_id: int) -> dict:
+        """Connects to the api and returns the data as json."""
+        self.logger.info("Connecting to API...")
+        if not isinstance(self.base_url, str):
+            self.logger.critical("Invalid URL type.")
+            raise TypeError("Invalid URL type.")
+        if not isinstance(plant_id, int):
+            self.logger.critical("Invalid plant_id type.")
+            raise TypeError("Invalid plant_id type.")
 
-    plant_id = 1  # Start index from 1
-    not_found_count = 0  # How many plants not found in a row
-    while True:
-        json_data = fetch_data(base_url, plant_id)
-        if json_data.get('error'):
-            error_msg = json_data['error']
-            if error_msg == 'plant not found':
-                not_found_count += 1
-            else:  # other error (sensor malfunction)
-                not_found_count = 0
-            logger.warning(
-                "Plant %s data returned an error message: %s", plant_id, error_msg)
-        else:
-            logger.info(
-                "Plant %s data successfully saved.", plant_id)
-            list_of_plants.append(json_data)
-        if not_found_count >= not_found_limit:
-            break
-        plant_id += 1
-    return list_of_plants
+        plant_url = self.base_url + str(plant_id)
+        data = self.get_request(plant_url)
+        self.logger.info("Received response for plant %s.", plant_id)
+        return data
+
+    def get_all_plants(self) -> list[dict]:
+        """Collects all the plant data and returns as a dataframe."""
+        self.logger.info("Collating plants...")
+        if not isinstance(self.base_url, str):
+            self.logger.critical("URL is invalid. Aborting.")
+            raise TypeError("Please use a valid url.")
+        if not isinstance(self.not_found_limit, int):
+            self.logger.critical("Not found limit is invalid. Aborting.")
+            raise TypeError("Please use a valid int value.")
+
+        list_of_plants = []
+
+        plant_id = 1  # Start index from 1
+        not_found_count = 0  # How many plants not found in a row
+        while True:
+            json_data = self.fetch_data(self.base_url, plant_id)
+            if json_data.get('error'):
+                error_msg = json_data['error']
+                if error_msg == 'plant not found':
+                    not_found_count += 1
+                else:  # other error (sensor malfunction)
+                    not_found_count = 0
+                self.logger.warning(
+                    "Plant %s data returned an error message: %s", plant_id, error_msg)
+            else:
+                self.logger.info(
+                    "Plant %s data successfully saved.", plant_id)
+                list_of_plants.append(json_data)
+            if not_found_count >= self.not_found_limit:
+                break
+            plant_id += 1
+        return list_of_plants
 
 
 def save_to_csv(plants_list: list[dict], filename: str = "data/output.csv") -> None:
@@ -105,7 +127,7 @@ def save_to_csv(plants_list: list[dict], filename: str = "data/output.csv") -> N
 if __name__ == "__main__":
     set_logger()
     load_dotenv()
-
     url = ENV["BASE_URL"]
-    plant_data = get_all_plants(url)
+    client = PlantAPIClient(url)
+    plant_data = client.get_all_plants()
     save_to_csv(plant_data)

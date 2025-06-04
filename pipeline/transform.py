@@ -1,6 +1,7 @@
 """Standardisation and normalisation of the plant data in csv before loading to DB."""
 
 import pandas as pd
+import numpy as np
 
 from utilities import get_logger, set_logger, load_csv_data
 
@@ -31,6 +32,11 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
         new_dataframe['temperature'], errors='coerce').notnull()]
     new_dataframe = new_dataframe[pd.to_numeric(
         new_dataframe['soil_moisture'], errors='coerce').notnull()]
+
+    # Checking for minus values
+    numeric_cols = new_dataframe.select_dtypes(include='number')
+    mask = (numeric_cols >= 0).all(axis=1)
+    new_dataframe = new_dataframe[mask]
 
     # Column type conversion
     new_dataframe['recording_taken'] = pd.to_datetime(

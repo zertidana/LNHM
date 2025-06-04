@@ -6,6 +6,7 @@ from log import get_logger, set_logger
 import pandas as pd
 from os import environ as ENV
 from dotenv import load_dotenv
+import sqlalchemy
 
 
 def connect_to_db() -> pyodbc.Connection:
@@ -35,7 +36,7 @@ def insert_transformed_data() -> None:
     T-SQL format?"""
     logger = get_logger()
     logger.info("Connecting to database.")
-    connection = connect_to_db()
+    # connection = connect_to_db()
     logger.info("Successfully connected to database!")
 
     logger.info("Loading local recent data...")
@@ -45,8 +46,22 @@ def insert_transformed_data() -> None:
 
     logger.info("Inserting data into database setup...")
 
-    with connection.cursor() as curr:
-        pass
+    """
+    driver=ENV["DB_DRIVER"],
+                          server=ENV["DB_HOST"],
+                          database=ENV["DB_NAME"],
+                          TrustServerCertificate='yes',
+                          UID=ENV["DB_USER"],
+                          PWD=ENV["DB_PASSWORD"],)
+    """
+
+    engine = sqlalchemy.create_engine(
+        f'mssql+pyodbc://{ENV["DB_USER"]}:{ENV["DB_PASSWORD"]}@{ENV['DB_HOST']}/{ENV['DB_NAME']}?driver={ENV['DB_DRIVER']}',
+        connect_args={'connect_timeout': 10, 'TrustServerCertificate': 'yes'},
+        echo=False)
+
+    transformed_data.to_sql('FACT_plant_health',
+                            engine, index=False, if_exists='append')
 
     logger.info("Successfully inserted data!")
 

@@ -78,7 +78,7 @@ class PlantAPIClient:
         plant_id = 1  # Start index from 1
         not_found_count = 0  # How many plants not found in a row
         while True:
-            json_data = self.fetch_data(self.base_url, plant_id)
+            json_data = self.fetch_data(plant_id)
             if json_data.get('error'):
                 error_msg = json_data['error']
                 if error_msg == 'plant not found':

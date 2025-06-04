@@ -10,3 +10,4 @@ pandas
 altair
 requests_mock
 boto3
+pyodbc

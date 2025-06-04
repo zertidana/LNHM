@@ -6,10 +6,6 @@ variable AWS_SECRET_ACCESS_KEY {
     type = string
 }
 
-variable EXECUTION_ROLE_ARN {
-    type = string
-}
-
 variable AWS_REGION {
     type = string
 }
@@ -18,23 +14,34 @@ variable VPC_ID {
     type = string
 }
 
-variable "LOG_GROUP" {
+variable "BASE_URL" {
     type = string
 }
 
-variable "ECS_CLUSTER_ID" {
+variable DB_DRIVER {
     type = string
 }
 
-variable CONTAINER_ENV_VARS {
-    description = "Environment variables for the container"
-  type        = list(object({
-    name  = string
-    value = string
-  }))
+variable "DB_HOST" {
+    type = string
 }
 
-variable "PUBLIC_SUBNET_IDS" {
-  type = list(string)
-  description = "List of public subnet IDs"
+variable "DB_PORT" {
+    type = string
+}
+
+variable "DB_USER" {
+    type = string
+}
+
+variable "DB_PASSWORD" {
+    type = string
+}
+
+variable "DB_NAME" {
+    type = string
+}
+
+variable "DB_SCHEMA" {
+    type = string
 }

@@ -92,6 +92,7 @@ venv/
 .terraform.*
 terraform.tfvars
 terraform.*
+pycache/*
 
 
 .venv

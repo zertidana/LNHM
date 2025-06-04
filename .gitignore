@@ -1,0 +1,7 @@
+
+
+    .env
+    data/
+    .pytest_cache/
+    .github/
+    .venv

@@ -98,4 +98,5 @@ terraform.*
 
 *.pem
 *.pemkey
+.env
 

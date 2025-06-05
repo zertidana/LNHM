@@ -35,18 +35,18 @@ def clean_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
 
     new_dataframe = dataframe[['temperature', 'soil_moisture',
                                'recording_taken', 'last_watered',
-                               'plant_id', 'error']].copy()
+                               'error', 'plant_id']].copy()
 
-    print(new_dataframe)
+    new_dataframe.rename(columns={
+        'error': 'error_msg',
+    }, inplace=True)
 
     # If error is null then skip rows if ANY values apart from error are null
-    error_mask = new_dataframe['error'].isna()
-    other_cols_null_or_empty = new_dataframe[new_dataframe.columns.difference(['error'])].isna() | new_dataframe[new_dataframe.columns.difference(['error'])].applymap(
+    error_mask = new_dataframe['error_msg'].isna()
+    other_cols_null_or_empty = new_dataframe[new_dataframe.columns.difference(['error_msg'])].isna() | new_dataframe[new_dataframe.columns.difference(['error'])].map(
         lambda x: isinstance(x, str) and x.strip() == '')
     rows_to_drop = error_mask & other_cols_null_or_empty.any(axis=1)
     new_dataframe = new_dataframe[~rows_to_drop].copy()
-
-    print(new_dataframe)
 
     # On numeric columns remove all rows that contain non-numeric data
     for col in ['plant_id', 'temperature', 'soil_moisture']:
@@ -56,7 +56,7 @@ def clean_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
     # Checking for minus values, if minus then update error value
     numeric_cols = new_dataframe.select_dtypes(include=['number']).columns
     negative_mask = (new_dataframe[numeric_cols] < 0).any(axis=1)
-    new_dataframe.loc[negative_mask, 'error'] = 'negative value error'
+    new_dataframe.loc[negative_mask, 'error_msg'] = 'negative value error'
 
     # Column type conversion
     new_dataframe['recording_taken'] = pd.to_datetime(
@@ -89,20 +89,28 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
                 today.strftime("%Y-%m-%d %H:%M"), file_path_minute)
     output_dataframe.to_csv(file_path_minute, index=False)
     logger.info("Successfully wrote data to %s!", file_path_minute)
+
+    # Check if the file exists and read the date.
     if os.path.exists(file_path_day):
         day_data = load_csv_data(file_path_day)[
             'recording_taken'].head(1).to_string(index=False)
         day_data_date = datetime.datetime.fromisoformat(day_data)
+        # If it doesn't match, the day has changed
         if not day_data_date.date() == today.date():
             logger.info("The date has changed. Calling summarise function.")
             summarise_day_from_csv(day_data_date)
             output_dataframe.to_csv(file_path_day, index=False)
-    else:
+        else:  # Else continue adding to the file
+            logger.info("Also adding cleaned plant data on %s to %s...",
+                        today.strftime("%Y-%m-%d %H:%M:%S"), file_path_day)
+            output_dataframe.to_csv(
+                file_path_day, header=False, index=False, mode='a')
+    else:  # If the file doesn't exist, make it with headers and add
         logger.info("Also adding cleaned plant data on %s to %s...",
                     today.strftime("%Y-%m-%d %H:%M:%S"), file_path_day)
         output_dataframe.to_csv(
-            file_path_day, header=False, index=False, mode='a')
-        logger.info("Successfully wrote data to %s!", file_path_day)
+            file_path_day, header=True, index=False, mode='a')
+    logger.info("Successfully wrote data to %s!", file_path_day)
 
 
 def summarise_day_from_csv(day_data_date: datetime, file_path_day: str = 'data/normalised_day_output.csv',

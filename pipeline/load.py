@@ -23,6 +23,8 @@ def insert_transformed_data(transformed_data: pd.DataFrame = None) -> None:
                 "No csv file found at path: data/normalised_minute_output.csv, "
                 "please run the previous pipeline steps to generate it.")
 
+    logger.info(transformed_data)
+
     logger.info("Inserting data into database setup...")
     engine = sqlalchemy.create_engine(
         (f"mssql+pyodbc://{ENV['DB_USER']}:{ENV['DB_PASSWORD']}"

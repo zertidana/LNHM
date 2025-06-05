@@ -145,7 +145,10 @@ def summarise_day_from_csv(datetime_value: datetime, file_path_day: str = 'data/
 def dataframe_daily_summary(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
     """Returns a daily summary of plant health data for a given day."""
     logger = get_logger()
-    summarised_day_data = df.groupby('plant_id').agg({
+
+    df_valid = df[df['error_msg'].isna()].copy()
+
+    summarised_day_data = df_valid.groupby('plant_id').agg({
         'temperature': 'mean',
         'soil_moisture': 'mean',
         'recording_taken': 'count',
@@ -167,5 +170,5 @@ def dataframe_daily_summary(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
 if __name__ == "__main__":
     set_logger()
     df = clean_dataframe_from_csv()
-    save_dataframe_to_csv(df)
-    # summarise_day_from_csv(datetime.date.today() - datetime.timedelta(days=1))
+    # save_dataframe_to_csv(df)
+    summarise_day_from_csv(datetime.date.today() - datetime.timedelta(days=1))

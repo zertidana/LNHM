@@ -100,7 +100,7 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
 
 def summarise_day_from_csv(day_data_date: datetime, file_path_day: str = 'data/normalised_day_output.csv',
                            output_path_historical: str = 'data/historical_data.csv') -> None:
-    """Summarise the day's averages for each unique plant_id, 
+    """Summarise the day's averages for each unique plant_id,
     and save as historical data."""
     logger = get_logger()
     day_data = load_csv_data(file_path_day)
@@ -142,6 +142,3 @@ def dataframe_daily_summary(df: pd.DataFrame, date: datetime):
 if __name__ == "__main__":
     set_logger()
     save_dataframe_to_csv(clean_dataframe_from_csv())
-    print(clean_dataframe_from_csv())
-    # summarise_day_from_csv(datetime.date.today())
-    # save_dataframe_to_csv(clean_dataframe_from_csv())

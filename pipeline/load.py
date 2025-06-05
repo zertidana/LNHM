@@ -8,7 +8,7 @@ import pandas as pd
 from utilities import get_logger, set_logger, load_csv_data
 
 
-def insert_transformed_data() -> None:
+def insert_transformed_data(load_from_csv: bool = None) -> None:
     """Function that calls connect function, and inserts into the Microsoft SQL database"""
     logger = get_logger()
 

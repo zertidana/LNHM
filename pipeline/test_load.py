@@ -5,7 +5,7 @@
 import pytest
 from pytest import mark
 from unittest.mock import patch, mock_open
-from transform import clean_dataframe, save_dataframe_to_csv, summarise_day
+from transform import clean_dataframe, save_dataframe_to_csv, summarise_day_from_csv
 from utilities import load_csv_data
 import pandas as pd
 

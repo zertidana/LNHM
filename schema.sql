@@ -243,4 +243,14 @@ INSERT INTO DIM_plant (plant_id, plant_name, scientific_name, regular_url, botan
 (47, 'Calliandra Haematocephala', 'Calliandra haematocephala', 'https://perenual.com/storage/species_image/1477_calliandra_haematocephala/regular/52063600268_834ebc0538_b.jpg', 42, 45),
 (48, 'Zamioculcas Zamiifolia', 'Zamioculcas zamiifolia', 'https://perenual.com/storage/image/upgrade_access.jpg', 37, 46),
 (49, 'Crassula Ovata', 'Crassula ovata', 'https://perenual.com/storage/species_image/2193_crassula_ovata/regular/33253726791_980c738a1e_b.jpg', 41, 47),
-(50, 'Epipremnum Aureum', 'Epipremnum aureum', 'https://perenual.com/storage/species_image/2773_epipremnum_aureum/regular/2560px-Epipremnum_aureum_31082012.jpg', 33, 48)
+(50, 'Epipremnum Aureum', 'Epipremnum aureum', 'https://perenual.com/storage/species_image/2773_epipremnum_aureum/regular/2560px-Epipremnum_aureum_31082012.jpg', 33, 48),
+(51, NULL, NULL, NULL, NULL, NULL),
+(52, NULL, NULL, NULL, NULL, NULL),
+(53, NULL, NULL, NULL, NULL, NULL),
+(54, NULL, NULL, NULL, NULL, NULL),
+(55, NULL, NULL, NULL, NULL, NULL),
+(56, NULL, NULL, NULL, NULL, NULL),
+(57, NULL, NULL, NULL, NULL, NULL),
+(58, NULL, NULL, NULL, NULL, NULL),
+(59, NULL, NULL, NULL, NULL, NULL),
+(60, NULL, NULL, NULL, NULL, NULL)

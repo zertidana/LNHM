@@ -3,6 +3,7 @@
 from os import environ as ENV
 from dotenv import load_dotenv
 import sqlalchemy
+import pandas as pd
 
 from utilities import get_logger, set_logger, load_csv_data
 
@@ -13,6 +14,23 @@ def insert_transformed_data() -> None:
 
     logger.info("Loading local recent data...")
     transformed_data = load_csv_data('data/normalised_minute_output.csv')
+    logger.info("Successfully loaded recent data!")
+
+    logger.info("Inserting data into database setup...")
+    engine = sqlalchemy.create_engine(
+        (f"mssql+pyodbc://{ENV['DB_USER']}:{ENV['DB_PASSWORD']}"
+         f"@{ENV['DB_HOST']}/{ENV['DB_NAME']}?driver={ENV['DB_DRIVER']}"),
+        connect_args={'connect_timeout': 10, 'TrustServerCertificate': 'yes'},
+        echo=False)
+
+    transformed_data.to_sql('FACT_plant_reading',
+                            engine, index=False, if_exists='append')
+
+    logger.info("Successfully inserted data!")
+
+
+def insert_transformed_dataframe(transformed_data: pd.DataFrame) -> None:
+    logger = get_logger()
     logger.info("Successfully loaded recent data!")
 
     logger.info("Inserting data into database setup...")

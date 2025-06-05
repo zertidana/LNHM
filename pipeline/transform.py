@@ -119,7 +119,7 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
         logger.info("Also adding cleaned plant data on %s to %s...",
                     today.strftime("%Y-%m-%d %H:%M:%S"), file_path_day)
         output_dataframe.to_csv(
-            file_path_day, header=True, index=False, mode='a')
+            file_path_day, index=False)
     logger.info("Successfully wrote data to %s!", file_path_day)
 
 
@@ -142,7 +142,7 @@ def summarise_day_from_csv(datetime_value: datetime, file_path_day: str = 'data/
                 output_path_historical)
 
 
-def dataframe_daily_summary(df: pd.DataFrame, date: datetime):
+def dataframe_daily_summary(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
     """Returns a daily summary of plant health data for a given day."""
     logger = get_logger()
     summarised_day_data = df.groupby('plant_id').agg({
@@ -166,4 +166,6 @@ def dataframe_daily_summary(df: pd.DataFrame, date: datetime):
 
 if __name__ == "__main__":
     set_logger()
-    save_dataframe_to_csv(clean_dataframe_from_csv())
+    df = clean_dataframe_from_csv()
+    save_dataframe_to_csv(df)
+    # summarise_day_from_csv(datetime.date.today() - datetime.timedelta(days=1))

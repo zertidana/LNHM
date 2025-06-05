@@ -27,14 +27,14 @@ data "aws_ecr_image" "etl_lambda_image" {
     image_tag       = "latest"
 }
 
-data "aws_ecr_repository" "health_check_image_repo" {
-    name = "c17-raffles-plant-health-lambda"
-}
+# data "aws_ecr_repository" "health_check_image_repo" {
+#     name = "c17-raffles-plant-health-lambda"
+# }
 
-data "aws_ecr_image" "health_check_image" {
-    repository_name = data.aws_ecr_repository.health_check_image_repo.name
-    image_tag       = "latest"
-}
+# data "aws_ecr_image" "health_check_image" {
+#     repository_name = data.aws_ecr_repository.health_check_image_repo.name
+#     image_tag       = "latest"
+# }
 
 #########################
 ### Lambda 
@@ -138,29 +138,29 @@ resource "aws_lambda_function" "etl_lambda" {
 }
 
 
-resource "aws_lambda_function" "health_check_lambda" {
-    function_name = "c17-raffles-plant-health-check-lambda"
-    role = aws_iam_role.lambda-role.arn
-    package_type = "Image"
-    image_uri = data.aws_ecr_image.health_check_image.image_uri
-    timeout = 30
-    environment {
-        variables = {
-            DB_DRIVER = var.DB_DRIVER
-            DB_HOST = var.DB_HOST
-            DB_PORT = var.DB_PORT
-            DB_USER = var.DB_USER
-            DB_PASSWORD = var.DB_PASSWORD
-            DB_NAME = var.DB_NAME
-            DB_SCHEMA = var.DB_SCHEMA
-            SES_REGION = var.AWS_REGION
-        }
-    }
-    vpc_config {
-        subnet_ids         = data.aws_db_subnet_group.subnet-group.subnet_ids
-        security_group_ids = [aws_security_group.lambda_sg.id]
-    }
-}
+# resource "aws_lambda_function" "health_check_lambda" {
+#     function_name = "c17-raffles-plant-health-check-lambda"
+#     role = aws_iam_role.lambda-role.arn
+#     package_type = "Image"
+#     image_uri = data.aws_ecr_image.health_check_image.image_uri
+#     timeout = 30
+#     environment {
+#         variables = {
+#             DB_DRIVER = var.DB_DRIVER
+#             DB_HOST = var.DB_HOST
+#             DB_PORT = var.DB_PORT
+#             DB_USER = var.DB_USER
+#             DB_PASSWORD = var.DB_PASSWORD
+#             DB_NAME = var.DB_NAME
+#             DB_SCHEMA = var.DB_SCHEMA
+#             SES_REGION = var.AWS_REGION
+#         }
+#     }
+#     vpc_config {
+#         subnet_ids         = data.aws_db_subnet_group.subnet-group.subnet_ids
+#         security_group_ids = [aws_security_group.lambda_sg.id]
+#     }
+# }
 
 resource "aws_security_group" "lambda_sg" {
     name        = "c17-lambda-sg"
@@ -179,10 +179,10 @@ data "aws_cloudwatch_log_group" "etl_lambda_logs" {
     name              = "/aws/lambda/${aws_lambda_function.etl_lambda.function_name}"
 }
 
-resource "aws_cloudwatch_log_group" "health_check_lambda_logs" {
-    name              = "/aws/lambda/${aws_lambda_function.health_check_lambda.function_name}"
-    retention_in_days = 14
-}
+# resource "aws_cloudwatch_log_group" "health_check_lambda_logs" {
+#     name              = "/aws/lambda/${aws_lambda_function.health_check_lambda.function_name}"
+#     retention_in_days = 14
+# }
 
 #########################
 ### S3 

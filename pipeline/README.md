@@ -33,3 +33,10 @@ If you would like CSV files, then run the ETL steps in order:
 If you would like to run the full ETL pipeline without CSV, run:
 `python3 etl_controller.py`
 
+## ETL Container
+
+To build the terraform container and push it to an ECR repository for use as a Lambda, run:
+
+1. `docker build --platform linux/amd64 --provenance=false -t [your-container-name] .`
+2. `docker tag [your-container-name]:latest [your-ecr-repo-id]`
+3. `docker push [your-ecr-repo-id]:latest`                           

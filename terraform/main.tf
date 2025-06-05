@@ -135,10 +135,6 @@ resource "aws_lambda_function" "etl_lambda" {
             DB_SCHEMA = var.DB_SCHEMA
         }
     }
-    vpc_config {
-        subnet_ids         = data.aws_db_subnet_group.subnet-group.subnet_ids
-        security_group_ids = [aws_security_group.lambda_sg.id]
-    }
 }
 
 
@@ -179,9 +175,8 @@ resource "aws_security_group" "lambda_sg" {
     }
 }
 
-resource "aws_cloudwatch_log_group" "etl_lambda_logs" {
+data "aws_cloudwatch_log_group" "etl_lambda_logs" {
     name              = "/aws/lambda/${aws_lambda_function.etl_lambda.function_name}"
-    retention_in_days = 14
 }
 
 resource "aws_cloudwatch_log_group" "health_check_lambda_logs" {
@@ -208,57 +203,75 @@ resource "aws_s3_object" "output_directory" {
 }
 
 ######################### 
-### EventBridge 
+### EventBridge Scheduler
 #########################
 
-resource "aws_cloudwatch_event_rule" "etl_schedule" {
-    name                = "c17-raffles-etl-schedule"
-    description         = "Trigger ETL pipeline every minute"
-    schedule_expression = "rate(1 minute)"
-}
+resource "aws_iam_role" "scheduler_role" {
+    name = "c17-raffles-scheduler-role"
 
-resource "aws_cloudwatch_event_target" "etl_target" {
-    rule      = aws_cloudwatch_event_rule.etl_schedule.name
-    target_id = "ETLLambda"
-    arn       = aws_lambda_function.etl_lambda.arn
-    role_arn  = aws_iam_role.lambda-role.arn
-}
-
-resource "aws_lambda_permission" "allow_etl_eventbridge" {
-    statement_id  = "AllowETLEventBridgeInvoke"
-    action        = "lambda:InvokeFunction"
-    function_name = aws_lambda_function.etl_lambda.function_name
-    principal     = "events.amazonaws.com"
-    source_arn    = aws_cloudwatch_event_rule.etl_schedule.arn
-}
-
-resource "aws_cloudwatch_event_rule" "rds_write_rule" {
-    name        = "c17-raffles-rds-write-rule"
-    description = "Trigger health check when RDS is written to"
-
-    event_pattern = jsonencode({
-        source      = ["aws.rds"]
-        detail-type = ["AWS API Call via CloudTrail"]
-        detail = {
-            eventName = ["ExecuteStatement"]
-            requestParameters = {
-                databaseName = [var.DB_NAME]
-            }
+    assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+        {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+            Service = "scheduler.amazonaws.com"
         }
+        }
+    ]
     })
 }
 
-resource "aws_cloudwatch_event_target" "health_check_target" {
-    rule      = aws_cloudwatch_event_rule.rds_write_rule.name
-    target_id = "HealthCheckLambda"
-    arn       = aws_lambda_function.health_check_lambda.arn
-    role_arn  = aws_iam_role.lambda-role.arn
+resource "aws_iam_role_policy" "scheduler_lambda_policy" {
+    name = "scheduler-lambda-invoke"
+    role = aws_iam_role.scheduler_role.id
+
+    policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+        {
+        Effect = "Allow"
+        Action = "lambda:InvokeFunction"
+        Resource = aws_lambda_function.etl_lambda.arn
+        }
+    ]
+    })
 }
 
-resource "aws_lambda_permission" "allow_health_check_eventbridge" {
-    statement_id  = "AllowHealthCheckEventBridgeInvoke"
+resource "aws_scheduler_schedule_group" "etl_group" {
+    name = "c17-raffles-etl-group"
+}
+
+resource "aws_scheduler_schedule" "etl_schedule" {
+    name       = "c17-raffles-etl-schedule"
+    group_name = aws_scheduler_schedule_group.etl_group.name
+
+    flexible_time_window {
+    mode = "OFF"
+    }
+
+    schedule_expression = "rate(1 minute)"
+
+    target {
+        arn      = aws_lambda_function.etl_lambda.arn
+        role_arn = aws_iam_role.scheduler_role.arn
+
+        input = jsonencode({
+            source = "eventbridge-scheduler"
+            time   = "scheduled"
+        })
+    }
+
+    description = "Trigger ETL pipeline every minute"
+    state       = "ENABLED"
+}
+
+resource "aws_lambda_permission" "allow_scheduler" {
+    statement_id  = "AllowSchedulerInvoke"
     action        = "lambda:InvokeFunction"
-    function_name = aws_lambda_function.health_check_lambda.function_name
-    principal     = "events.amazonaws.com"
-    source_arn    = aws_cloudwatch_event_rule.rds_write_rule.arn
+    function_name = aws_lambda_function.etl_lambda.function_name
+    principal     = "scheduler.amazonaws.com"
+    source_arn    = aws_scheduler_schedule.etl_schedule.arn
+
 }

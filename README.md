@@ -16,11 +16,13 @@ The data is visualised using Streamlit, a lightweight web app framework chosen f
 
 ## 🤐 Environment Variable Structure
 The following are the variables required in the .env file with their placeholders:
-- `BASE_URL`=http://your-sensor-api.com/data
-- `DB_DRIVER`=ODBC Driver 18 for SQL Server
-- `DB_HOST`=your-database-hostname  
-- `DB_PORT`=1433  
-- `DB_USER`=your_db_username
-- `DB_PASSWORD`=your_db_password
-- `DB_NAME`=plant_monitoring_db
-- `DB_SCHEMA`=your_schema_name
+```
+`BASE_URL=http://your-sensor-api.com/data
+DB_DRIVER=ODBC Driver 18 for SQL Server
+DB_HOST=your-database-hostname  
+DB_PORT=1433  
+DB_USER=your_db_username
+DB_PASSWORD=your_db_password
+DB_NAME=plant_monitoring_db
+DB_SCHEMA=your_schema_name
+```

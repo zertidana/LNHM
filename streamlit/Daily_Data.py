@@ -15,6 +15,7 @@ from visualisations import (get_average_moisture_level_per_plant_bar_chart,
                             get_avg_temp_area_chart)
 
 # pylint: disable=no-member, invalid-name, too-many-arguments, c-extension-no-member
+load_dotenv()
 
 st.set_page_config(
     page_title="Plant Analytics",
@@ -58,7 +59,6 @@ def load_data(_connection):
 
 
 if __name__ == "__main__":
-    load_dotenv()
 
     conn = get_connection(ENV['DB_DRIVER'],
                           ENV['DB_HOST'],

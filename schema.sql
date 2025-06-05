@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS FACT_plant_health;
+DROP TABLE IF EXISTS FACT_plant_reading;
 DROP TABLE IF EXISTS DIM_plant;
 DROP TABLE IF EXISTS DIM_botanist;
 DROP TABLE IF EXISTS DIM_origin_location;
@@ -42,6 +42,7 @@ CREATE TABLE FACT_plant_reading (
     soil_moisture FLOAT,
     recording_taken DATETIME2,
     last_watered DATETIME2,
+    error_msg VARCHAR(255),
     plant_id SMALLINT,
     FOREIGN KEY (plant_id) REFERENCES DIM_plant(plant_id)
 );
@@ -199,6 +200,7 @@ INSERT INTO DIM_plant (plant_id, plant_name, scientific_name, regular_url, botan
 (4,'Black bat flower', 'NULL', NULL, 38, 4),
 (5,'Pitcher plant', 'Sarracenia catesbaei', 'https://perenual.com/storage/image/upgrade_access.jpg', 5, 5),
 (6,'Wollemi pine', 'Wollemia nobilis', 'https://perenual.com/storage/image/upgrade_access.jpg', 20, 6),
+(7, NULL, NULL, NULL, NULL, NULL),
 (8,'Bird of paradise', 'Heliconia schiedeana ''Fire and Ice''', 'https://perenual.com/storage/image/upgrade_access.jpg', 8, 7),
 (9, 'Cactus', 'Pereskia grandifolia', 'https://perenual.com/storage/image/upgrade_access.jpg', 40, 8),
 (10,'Dragon tree', 'NULL', NULL, 39, 9),
@@ -234,6 +236,7 @@ INSERT INTO DIM_plant (plant_id, plant_name, scientific_name, regular_url, botan
 (40, 'Amaryllis', 'Hippeastrum (group)', 'https://perenual.com/storage/image/upgrade_access.jpg', 10, 39),
 (41, 'Caladium Bicolor', 'Caladium bicolor', 'https://perenual.com/storage/species_image/1457_caladium_bicolor/regular/25575875658_d782fb76f1_b.jpg', 19, 40),
 (42, 'Chlorophytum Comosum', 'Chlorophytum comosum ''Vittatum''', 'https://perenual.com/storage/species_image/1847_chlorophytum_comosum_vittatum/regular/2560px-Chlorophytum_comosum_27Vittatum27_kz02.jpg', 4, 41),
+(43, NULL, NULL, NULL, NULL, NULL),
 (44, 'Araucaria Heterophylla', 'Araucaria heterophylla', 'https://perenual.com/storage/species_image/917_araucaria_heterophylla/regular/49833684212_2aff9d7b3c_b.jpg', 31, 42),
 (45, 'Begonia', 'Begonia ''Art Hodes''', NULL, 7, 43),
 (46, 'Medinilla Magnifica', 'Medinilla magnifica', 'https://perenual.com/storage/image/upgrade_access.jpg', 12, 44),

@@ -85,8 +85,10 @@ class PlantAPIClient:
                 error_msg = json_data['error']
                 if error_msg == 'plant not found':
                     not_found_count += 1
-                else:  # other error (sensor malfunction)
+                # other error than not found (e.g. sensor malfunction) Must record
+                else:
                     not_found_count = 0
+                    list_of_plants.append(json_data)
                 self.logger.warning(
                     "Plant %s data returned an error message: %s", plant_id, error_msg)
             else:

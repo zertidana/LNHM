@@ -1,11 +1,12 @@
 """Streamlit page for historical data."""
-# pylint: disable=redefined-outer-name, import-error
+# pylint: disable=redefined-outer-name, import-error, no-member
 import pandas as pd
 
-import streamlit as st
+
 from visualisations import (get_temperature_heatmap,
                             identify_outliers
                             )
+import streamlit as st
 st.set_page_config(page_title="Historical Data", page_icon="🗂️")
 
 

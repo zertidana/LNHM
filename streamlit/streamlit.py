@@ -1,6 +1,5 @@
 """Streamlit Dashboard."""
 
-from os import environ as ENV
 import pandas as pd
 from dotenv import load_dotenv
 import streamlit as st
@@ -34,8 +33,8 @@ from visualisations import (get_average_moisture_level_per_plant_bar_chart,
 if __name__ == "__main__":
     load_dotenv()
 
-    filename = "normalised_day_output.csv"
-    df = pd.read_csv(filename)
+    FILE_NAME = "data/normalised_day_output.csv"
+    df = pd.read_csv(FILE_NAME)
 
     # st.set_page_config(
     #     page_title="Plant Analytics",

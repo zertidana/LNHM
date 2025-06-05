@@ -1,9 +1,8 @@
 """Streamlit page for historical data."""
-import streamlit as st
+# pylint: disable=redefined-outer-name, import-error
 import pandas as pd
-import altair as alt
-import numpy as np
 
+import streamlit as st
 from visualisations import (get_temperature_heatmap,
                             identify_outliers
                             )
@@ -12,6 +11,7 @@ st.set_page_config(page_title="Historical Data", page_icon="🗂️")
 
 @st.cache_data(ttl=10)
 def load_historical_data():
+    """Loads historical data."""
     df = pd.read_csv("historical_data_dummy.csv",
                      parse_dates=["last_watered", "date"])
     return df

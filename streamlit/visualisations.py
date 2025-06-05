@@ -4,12 +4,13 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-# pylint: disable=no-member
+# pylint: disable=no-member, line-too-long
 
 ##################### Real-Time Data Graphs #####################
 
 
 def show_plant_info(df, plant_name):
+    """Shows the plant information."""
     plant_df = df[df["plant_id"] == plant_name]
 
     if plant_df.empty:
@@ -120,6 +121,7 @@ def get_temperature_heatmap(df):
 
 
 def identify_outliers(df, temp_threshold=2.0, moisture_threshold=2.0):
+    """Finds all the outliers depending on the z-score."""
     df_copy = df.copy()
     df_copy["temp_zscore"] = (df_copy["avg_temperature"] -
                               df_copy["avg_temperature"].mean()) / df_copy["avg_temperature"].std()
@@ -128,4 +130,5 @@ def identify_outliers(df, temp_threshold=2.0, moisture_threshold=2.0):
 
     outliers = df_copy[(df_copy["temp_zscore"].abs() > temp_threshold) |
                        (df_copy["moisture_zscore"].abs() > moisture_threshold)]
-    return outliers[["plant_id", "date", "avg_temperature", "avg_soil_moisture", "temp_zscore", "moisture_zscore"]]
+    return outliers[["plant_id", "date", "avg_temperature", "avg_soil_moisture",
+                     "temp_zscore", "moisture_zscore"]]

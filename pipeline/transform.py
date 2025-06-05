@@ -3,7 +3,6 @@
 import datetime
 import os
 import pandas as pd
-import numpy as np
 
 from utilities import get_logger, set_logger, load_csv_data
 
@@ -119,6 +118,7 @@ def summarise_day_from_csv(day_data_date: datetime, file_path_day: str = 'data/n
 
 
 def dataframe_daily_summary(df: pd.DataFrame, date: datetime):
+    """Returns a daily summary of plant health data for a given day."""
     logger = get_logger()
     summarised_day_data = df.groupby('plant_id').agg({
         'temperature': 'mean',

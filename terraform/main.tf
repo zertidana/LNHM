@@ -18,10 +18,10 @@ data "aws_ecr_repository" "etl_lambda_image_repo" {
     name = "c17-raffles-etl-lambda"
 }
 
-# data "aws_ecr_image" "etl_lambda_image" {
-#     repository_name = data.aws_ecr_repository.etl_lambda_image_repo.name
-#     image_tag       = "latest"
-# }
+data "aws_ecr_image" "etl_lambda_image" {
+    repository_name = data.aws_ecr_repository.etl_lambda_image_repo.name
+    image_tag       = "latest"
+}
 
 data "aws_ecr_repository" "health_check_image_repo" {
     name = "c17-raffles-plant-health-lambda"
@@ -46,7 +46,6 @@ data "aws_iam_policy_document" "lambda-role-trust-policy-doc" {
     }
 }
 
-# Permissions doc (what are you allowed to do?)
 data "aws_iam_policy_document" "lambda-role-permissions-policy-doc" {
     statement {
       effect = "Allow"
@@ -97,7 +96,6 @@ data "aws_iam_policy_document" "lambda-role-permissions-policy-doc" {
     }
 }
 
-# Role (thing that can be assumed to get power)
 resource "aws_iam_role" "lambda-role" {
     name = "c17-raffles-lambda-role"
     assume_role_policy = data.aws_iam_policy_document.lambda-role-trust-policy-doc.json
@@ -108,7 +106,6 @@ resource "aws_iam_policy" "lambda-role-permissions-policy" {
     policy = data.aws_iam_policy_document.lambda-role-permissions-policy-doc.json
 }
 
-# Connect the policy to the role
 resource "aws_iam_role_policy_attachment" "lambda-role-policy-connection" {
     role = aws_iam_role.lambda-role.name
     policy_arn = aws_iam_policy.lambda-role-permissions-policy.arn

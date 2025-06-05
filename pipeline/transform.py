@@ -94,11 +94,11 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
     if os.path.exists(file_path_day):
         day_data = load_csv_data(file_path_day)[
             'recording_taken'].head(1).to_string(index=False)
-        day_data_date = datetime.datetime.fromisoformat(day_data)
+        day_data = datetime.datetime.fromisoformat(day_data)
         # If it doesn't match, the day has changed
-        if day_data_date.date() != today.date():
+        if day_data.date() != today.date():
             logger.info("The date has changed. Calling summarise function.")
-            summarise_day_from_csv(day_data_date)
+            summarise_day_from_csv(day_data)
             output_dataframe.to_csv(file_path_day, index=False)
         else:  # Else continue adding to the file
             logger.info("Also adding cleaned plant data on %s to %s...",
@@ -113,13 +113,13 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
     logger.info("Successfully wrote data to %s!", file_path_day)
 
 
-def summarise_day_from_csv(day_data_date: datetime, file_path_day: str = 'data/normalised_day_output.csv',
+def summarise_day_from_csv(datetime_value: datetime, file_path_day: str = 'data/normalised_day_output.csv',
                            output_path_historical: str = 'data/historical_data.csv') -> None:
     """Summarise the day's averages for each unique plant_id,
     and save as historical data."""
     logger = get_logger()
     day_data = load_csv_data(file_path_day)
-    summarised_day_data = dataframe_daily_summary(day_data, day_data_date)
+    summarised_day_data = dataframe_daily_summary(day_data, datetime_value)
 
     # Check if file exists and add headers if not
     if os.path.exists(output_path_historical):

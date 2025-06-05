@@ -1,5 +1,5 @@
 """A script which archives a summary of short term 
-storage data (last 24hr) into S3"""
+storage data (last 24hr) as a CSV file and uploads to AWS S3."""
 import sqlalchemy
 import pandas as pd
 import io
@@ -89,7 +89,9 @@ def upload_day_summary_as_csv(df: pd.DataFrame) -> None:
     )
 
 
-if __name__ == "__main__":
+def run_summarise_and_delete() -> None:
+    """Run all components of this script to summarise plant readings, 
+    upload to S3 and clear the RDS db."""
     set_logger()
     load_dotenv()
     eng = create_tsql_engine()
@@ -97,3 +99,23 @@ if __name__ == "__main__":
     summarised_day_data = dataframe_daily_summary(df, datetime.today())
     upload_day_summary_as_csv(summarised_day_data)
     cleanup_plant_readings(eng)
+
+
+def archive_lambda_handler(event, context):
+    """AWS Lambda handler to trigger ETL pipeline."""
+    try:
+        run_summarise_and_delete()
+        return {
+            "statusCode": 200,
+            "body": "Succesfully summarised daily "
+            "plant readings, uploaded to S3 and cleaned up the db."
+        }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": f"S3 Archiver failed: {str(e)}"
+        }
+
+
+if __name__ == "__main__":
+    run_summarise_and_delete()

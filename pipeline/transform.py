@@ -35,21 +35,28 @@ def clean_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
 
     new_dataframe = dataframe[['temperature', 'soil_moisture',
                                'recording_taken', 'last_watered',
-                               'plant_id']].copy()
-    new_dataframe = new_dataframe.dropna()  # skip rows if ANY values are null
+                               'plant_id', 'error']].copy()
 
-    # On numeric columns convert all chars that aren't numbers to null and then remove them
-    new_dataframe = new_dataframe[pd.to_numeric(
-        new_dataframe['plant_id'], errors='coerce').notnull()]
-    new_dataframe = new_dataframe[pd.to_numeric(
-        new_dataframe['temperature'], errors='coerce').notnull()]
-    new_dataframe = new_dataframe[pd.to_numeric(
-        new_dataframe['soil_moisture'], errors='coerce').notnull()]
+    print(new_dataframe)
 
-    # Checking for minus values
-    numeric_cols = new_dataframe.select_dtypes(include='number')
-    mask = (numeric_cols >= 0).all(axis=1)
-    new_dataframe = new_dataframe[mask]
+    # If error is null then skip rows if ANY values apart from error are null
+    error_mask = new_dataframe['error'].isna()
+    other_cols_null_or_empty = new_dataframe[new_dataframe.columns.difference(['error'])].isna() | new_dataframe[new_dataframe.columns.difference(['error'])].applymap(
+        lambda x: isinstance(x, str) and x.strip() == '')
+    rows_to_drop = error_mask & other_cols_null_or_empty.any(axis=1)
+    new_dataframe = new_dataframe[~rows_to_drop].copy()
+
+    print(new_dataframe)
+
+    # On numeric columns remove all rows that contain non-numeric data
+    for col in ['plant_id', 'temperature', 'soil_moisture']:
+        new_dataframe = new_dataframe[new_dataframe[col].isna() | pd.to_numeric(
+            new_dataframe[col], errors='coerce').notna()]
+
+    # Checking for minus values, if minus then update error value
+    numeric_cols = new_dataframe.select_dtypes(include=['number']).columns
+    negative_mask = (new_dataframe[numeric_cols] < 0).any(axis=1)
+    new_dataframe.loc[negative_mask, 'error'] = 'negative value error'
 
     # Column type conversion
     new_dataframe['recording_taken'] = pd.to_datetime(

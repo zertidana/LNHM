@@ -74,8 +74,6 @@ def upload_day_summary_as_csv(df: pd.DataFrame) -> None:
     """Uploads a dataframe of a day's summary of plant readings as CSV."""
     s3_client = client(
         's3',
-        aws_access_key_id=ENV['AWS_ACCESS_KEY_ID'],
-        aws_secret_access_key=ENV['AWS_SECRET_ACCESS_KEY'],
         region_name=ENV.get('AWS_REGION', 'eu-west-2')
     )
 

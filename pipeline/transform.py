@@ -96,7 +96,7 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
             'recording_taken'].head(1).to_string(index=False)
         day_data_date = datetime.datetime.fromisoformat(day_data)
         # If it doesn't match, the day has changed
-        if not day_data_date.date() == today.date():
+        if day_data_date.date() != today.date():
             logger.info("The date has changed. Calling summarise function.")
             summarise_day_from_csv(day_data_date)
             output_dataframe.to_csv(file_path_day, index=False)

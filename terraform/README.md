@@ -42,4 +42,4 @@ This directory contains the Terraform code used to provision and manage the AWS 
 > 🚧 
 >Warning: Deleting the cloud resources specified in this document will cause the pipeline to fail and could lead to data loss.
 >
-- To delete cloud resources you can run `terraform destory`.
+- To delete cloud resources you can run `terraform destroy`.

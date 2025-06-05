@@ -99,6 +99,67 @@ def get_average_moisture_level_per_plant_bar_chart(df, top_n=5):
 
     return chart
 
+
+def get_average_temperature_per_city_bar_chart(df, top_n=5):
+    """Bar chart showing average temperature by city, colored by country."""
+    avg_temp_city = (
+        df.groupby(["city", "country_name"])["temperature"]
+        .mean()
+        .reset_index()
+        .rename(columns={"temperature": "avg_temp"})
+        .sort_values(by="avg_temp", ascending=False)
+        .head(top_n)
+    )
+
+    chart = alt.Chart(avg_temp_city).mark_bar().encode(
+        y=alt.Y("city:N", title="City", sort="-x"),
+        x=alt.X("avg_temp:Q", title="Average Temperature (°C)"),
+        color=alt.Color("country_name:N", title="Country",
+                        scale=alt.Scale(scheme='greens')),
+        tooltip=["city:N", "country_name:N", "avg_temp:Q"]
+    ).properties(title=f"Top {top_n} Cities by Average Temperature", width=700)
+
+    return chart
+
+
+@st.cache_data(ttl=3)
+def get_moisture_level_per_botanist_bar_chart(df, top_n=10):
+    """Bar chart showing average soil moisture per botanist."""
+    avg_moisture_botanist = (
+        df.groupby("botanist_name")["soil_moisture"]
+        .mean()
+        .reset_index()
+        .rename(columns={"soil_moisture": "avg_moisture"})
+        .sort_values(by="avg_moisture", ascending=False)
+        .head(top_n)
+    )
+
+    chart = alt.Chart(avg_moisture_botanist).mark_bar().encode(
+        y=alt.Y("botanist_name:N", title="Botanist", sort="-x"),
+        x=alt.X("avg_moisture:Q", title="Average Soil Moisture (%)"),
+        color=alt.Color("avg_moisture:Q", scale=alt.Scale(scheme="greens")),
+        tooltip=["botanist_name:N", "avg_moisture:Q"]
+    ).properties(title=f"Top {top_n} Botanists by Avg Soil Moisture", width=700)
+
+    return chart
+
+
+def get_avg_temp_area_chart(df):
+    """Area chart showing average temperature trend over time."""
+    df_time = df.copy()
+    df_time["recording_taken"] = pd.to_datetime(df_time["recording_taken"])
+    trend = df_time.groupby("recording_taken")[
+        "temperature"].mean().reset_index()
+
+    chart = alt.Chart(trend).mark_area(opacity=0.5).encode(
+        x=alt.X("recording_taken:T", title="Time"),
+        y=alt.Y("temperature:Q", title="Average Temperature (°C)"),
+        color=alt.value("lime"),
+        tooltip=["recording_taken:T", "temperature:Q"]
+    ).properties(title="Average Temperature Over Time", width=700)
+
+    return chart
+
 ##################### Historical Data Graphs #####################
 
 

@@ -8,7 +8,7 @@ import numpy as np
 from utilities import get_logger, set_logger, load_csv_data
 
 
-def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
+def clean_dataframe_from_csv(file_path: str = 'data/output.csv') -> pd.DataFrame:
     """Filters selected columns from the initial dataframe
     that we need for the FACT update every minute."""
     logger = get_logger()
@@ -21,10 +21,22 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
     logger.info("Data successfully loaded!")
 
     logger.info("Extracting and normalising data columns..")
+    new_dataframe = clean_dataframe(input_dataframe)
 
-    new_dataframe = input_dataframe[['temperature', 'soil_moisture',
-                                    'recording_taken', 'last_watered',
-                                     'plant_id']].copy()
+    return new_dataframe
+
+
+def clean_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
+    """Filters selected columns from the initial dataframe
+    that we need for the FACT update every minute."""
+    logger = get_logger()
+    if not isinstance(dataframe, pd.DataFrame):
+        raise TypeError(
+            f"Incorrect type for parameter 'dataframe' - type: {type(dataframe)}")
+
+    new_dataframe = dataframe[['temperature', 'soil_moisture',
+                               'recording_taken', 'last_watered',
+                               'plant_id']].copy()
     new_dataframe = new_dataframe.dropna()  # skip rows if ANY values are null
 
     # On numeric columns convert all chars that aren't numbers to null and then remove them
@@ -71,14 +83,14 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
                 today.strftime("%Y-%m-%d %H:%M"), file_path_minute)
     output_dataframe.to_csv(file_path_minute, index=False)
     logger.info("Successfully wrote data to %s!", file_path_minute)
-
-    day_data = load_csv_data(file_path_day)[
-        'recording_taken'].head(1).to_string(index=False)
-    day_data_date = datetime.datetime.fromisoformat(day_data)
-    if not day_data_date.date() == today.date():
-        logger.info("The date has changed. Calling summarise function.")
-        summarise_day(day_data_date)
-        output_dataframe.to_csv(file_path_day, index=False)
+    if os.path.exists(file_path_day):
+        day_data = load_csv_data(file_path_day)[
+            'recording_taken'].head(1).to_string(index=False)
+        day_data_date = datetime.datetime.fromisoformat(day_data)
+        if not day_data_date.date() == today.date():
+            logger.info("The date has changed. Calling summarise function.")
+            summarise_day_from_csv(day_data_date)
+            output_dataframe.to_csv(file_path_day, index=False)
     else:
         logger.info("Also adding cleaned plant data on %s to %s...",
                     today.strftime("%Y-%m-%d %H:%M:%S"), file_path_day)
@@ -87,28 +99,13 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
         logger.info("Successfully wrote data to %s!", file_path_day)
 
 
-def summarise_day(day_data_date: datetime, file_path_day: str = 'data/normalised_day_output.csv',
-                  output_path_historical: str = 'data/historical_data.csv') -> None:
+def summarise_day_from_csv(day_data_date: datetime, file_path_day: str = 'data/normalised_day_output.csv',
+                           output_path_historical: str = 'data/historical_data.csv') -> None:
     """Summarise the day's averages for each unique plant_id, 
     and save as historical data."""
     logger = get_logger()
     day_data = load_csv_data(file_path_day)
-    summarised_day_data = day_data.groupby('plant_id').agg({
-        'temperature': 'mean',
-        'soil_moisture': 'mean',
-        'recording_taken': 'count',
-        'last_watered': 'max'
-    }).reset_index()
-
-    summarised_day_data.rename(columns={
-        'temperature': 'avg_temperature',
-        'soil_moisture': 'avg_soil_moisture',
-        'recording_taken': 'recording_count',
-    }, inplace=True)
-    summarised_day_data['date'] = day_data_date.strftime("%Y-%m-%d")
-
-    logger.info("Summarised data for day %s.",
-                day_data_date.strftime("%Y-%m-%d"))
+    summarised_day_data = dataframe_daily_summary(day_data, day_data_date)
 
     # Check if file exists and add headers if not
     if os.path.exists(output_path_historical):
@@ -121,6 +118,30 @@ def summarise_day(day_data_date: datetime, file_path_day: str = 'data/normalised
                 output_path_historical)
 
 
+def dataframe_daily_summary(df: pd.DataFrame, date: datetime):
+    logger = get_logger()
+    summarised_day_data = df.groupby('plant_id').agg({
+        'temperature': 'mean',
+        'soil_moisture': 'mean',
+        'recording_taken': 'count',
+        'last_watered': 'max'
+    }).reset_index()
+
+    summarised_day_data.rename(columns={
+        'temperature': 'avg_temperature',
+        'soil_moisture': 'avg_soil_moisture',
+        'recording_taken': 'recording_count',
+    }, inplace=True)
+    summarised_day_data['date'] = date.strftime("%Y-%m-%d")
+
+    logger.info("Summarised data for day %s.",
+                date.strftime("%Y-%m-%d"))
+    return summarised_day_data
+
+
 if __name__ == "__main__":
     set_logger()
-    save_dataframe_to_csv(clean_dataframe())
+    save_dataframe_to_csv(clean_dataframe_from_csv())
+    print(clean_dataframe_from_csv())
+    # summarise_day_from_csv(datetime.date.today())
+    # save_dataframe_to_csv(clean_dataframe_from_csv())

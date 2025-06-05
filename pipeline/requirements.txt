@@ -1,7 +1,10 @@
-python-dotenv
-requests
-requests-mock
-pandas
-sqalchemy
 pytest
 pylint
+python-dotenv
+requests
+ipykernel
+logging
+pandas
+requests_mock
+pyodbc
+sqlalchemy

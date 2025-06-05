@@ -1,20 +1,11 @@
 """Standardisation and normalisation of the plant data in csv before loading to DB."""
 
+import datetime
+import os
 import pandas as pd
+import numpy as np
 
-from log import get_logger, set_logger
-
-
-def load_data(file_path: str = 'data/output.csv') -> pd.DataFrame:
-    """Loads the unclean data from csv."""
-    logger = get_logger()
-    if not isinstance(file_path, str):
-        logger.critical("Invalid URL type.")
-        raise TypeError("Invalid URL type.")
-    if file_path[-4:] != ".csv":
-        logger.critical("Filename doesn't end in .csv.")
-        raise ValueError("Please end your filename in .csv.")
-    return pd.read_csv(file_path)
+from utilities import get_logger, set_logger, load_csv_data
 
 
 def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
@@ -23,7 +14,7 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
     logger = get_logger()
     logger.info("Loading data from file path...")
     try:
-        input_dataframe = load_data(file_path)
+        input_dataframe = load_csv_data(file_path)
     except Exception as exc:
         logger.info("Data did not successfully load.")
         raise exc
@@ -44,7 +35,10 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
     new_dataframe = new_dataframe[pd.to_numeric(
         new_dataframe['soil_moisture'], errors='coerce').notnull()]
 
-    # GET RID OF MINUS VALUES.
+    # Checking for minus values
+    numeric_cols = new_dataframe.select_dtypes(include='number')
+    mask = (numeric_cols >= 0).all(axis=1)
+    new_dataframe = new_dataframe[mask]
 
     # Column type conversion
     new_dataframe['recording_taken'] = pd.to_datetime(
@@ -57,20 +51,74 @@ def clean_dataframe(file_path: str = 'data/output.csv') -> pd.DataFrame:
 
 
 def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
-                          file_path: str = 'data/normalised_output.csv') -> None:
-    """Create new normalised csv file."""
+                          file_path_minute: str = 'data/normalised_minute_output.csv',
+                          file_path_day: str = 'data/normalised_day_output.csv') -> None:
+    """Save current minute dataframe to:
+    1. A new normalised csv file representing the minute. This is used directly by transform.py.
+    2. A csv file representing the whole day. This is used later by long-term data to summarise the day."""
     logger = get_logger()
 
-    if not isinstance(file_path, str):
-        raise TypeError("Please use a string for your filename.")
-    if file_path[-4:] != ".csv":
-        raise ValueError("Please end your filename in .csv.")
+    today = datetime.datetime.now()
 
-    logger.info("Saving normalised plant data to %s...", file_path)
+    for file_path in [file_path_minute, file_path_day]:
+        if not isinstance(file_path, str):
+            raise TypeError("Please use a string for your filename.")
+        if file_path[-4:] != ".csv":
+            raise ValueError("Please end your filename in .csv.")
 
-    output_dataframe.to_csv(file_path, index=False)
+    # For file_path_minute, overwrite minute file
+    logger.info("Saving cleaned plant data at %s to %s...",
+                today.strftime("%Y-%m-%d %H:%M"), file_path_minute)
+    output_dataframe.to_csv(file_path_minute, index=False)
+    logger.info("Successfully wrote data to %s!", file_path_minute)
 
-    logger.info("Successfully wrote data to %s!", file_path)
+    day_data = load_csv_data(file_path_day)[
+        'recording_taken'].head(1).to_string(index=False)
+    day_data_date = datetime.datetime.fromisoformat(day_data)
+    if not day_data_date.date() == today.date():
+        logger.info("The date has changed. Calling summarise function.")
+        summarise_day(day_data_date)
+        output_dataframe.to_csv(file_path_day, index=False)
+    else:
+        logger.info("Also adding cleaned plant data on %s to %s...",
+                    today.strftime("%Y-%m-%d %H:%M:%S"), file_path_day)
+        output_dataframe.to_csv(
+            file_path_day, header=False, index=False, mode='a')
+        logger.info("Successfully wrote data to %s!", file_path_day)
+
+
+def summarise_day(day_data_date: datetime, file_path_day: str = 'data/normalised_day_output.csv',
+                  output_path_historical: str = 'data/historical_data.csv') -> None:
+    """Summarise the day's averages for each unique plant_id, 
+    and save as historical data."""
+    logger = get_logger()
+    day_data = load_csv_data(file_path_day)
+    summarised_day_data = day_data.groupby('plant_id').agg({
+        'temperature': 'mean',
+        'soil_moisture': 'mean',
+        'recording_taken': 'count',
+        'last_watered': 'max'
+    }).reset_index()
+
+    summarised_day_data.rename(columns={
+        'temperature': 'avg_temperature',
+        'soil_moisture': 'avg_soil_moisture',
+        'recording_taken': 'recording_count',
+    }, inplace=True)
+    summarised_day_data['date'] = day_data_date.strftime("%Y-%m-%d")
+
+    logger.info("Summarised data for day %s.",
+                day_data_date.strftime("%Y-%m-%d"))
+
+    # Check if file exists and add headers if not
+    if os.path.exists(output_path_historical):
+        data_header = False
+    else:
+        data_header = True
+    summarised_day_data.to_csv(
+        output_path_historical, header=data_header, index=False, mode='a')
+    logger.info("Successfully saved historical data to %s.",
+                output_path_historical)
 
 
 if __name__ == "__main__":

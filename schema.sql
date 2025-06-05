@@ -43,6 +43,7 @@ CREATE TABLE FACT_plant_reading (
     recording_taken DATETIME2,
     last_watered DATETIME2,
     plant_id SMALLINT,
+    error_msg VARCHAR,
     FOREIGN KEY (plant_id) REFERENCES DIM_plant(plant_id)
 );
 

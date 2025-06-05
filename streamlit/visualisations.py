@@ -8,7 +8,7 @@ import streamlit as st
 
 
 def show_plant_info(df, plant_name):
-    plant_df = df[df["plant_id"] == plant_name]
+    plant_df = df[df["plant_name"] == plant_name]
 
     if plant_df.empty:
         st.warning("No data available for this plant...")
@@ -30,7 +30,7 @@ def show_plant_info(df, plant_name):
 @st.cache_data(ttl=3)
 def get_temperature_line_graph(df, plant_name):
     """Line graph that shows the temperature of a specific plant."""
-    plant_df = df[df["plant_id"] == plant_name]
+    plant_df = df[df["plant_name"] == plant_name]
     chart = alt.Chart(plant_df).mark_line().encode(
         x="recording_taken:T",
         y="temperature:Q",
@@ -43,7 +43,7 @@ def get_temperature_line_graph(df, plant_name):
 def get_average_temperature_per_plant_bar_chart(df, top_n=5):
     """Bar chart that shows the top N plants by average temp."""
     avg_temperatures = (
-        df.groupby("plant_id")["temperature"]
+        df.groupby("plant_name")["temperature"]
         .mean()
         .reset_index()
         .rename(columns={'temperature': 'avg_temp'})
@@ -52,9 +52,9 @@ def get_average_temperature_per_plant_bar_chart(df, top_n=5):
     )
 
     chart = alt.Chart(avg_temperatures).mark_bar().encode(
-        y=alt.Y("plant_id:N", title="Plant ID", sort="-x"),
+        y=alt.Y("plant_name:N", title="Plant Name", sort="-x"),
         x=alt.X("avg_temp:Q", title="Average Temperature"),
-        tooltip=["plant_id:N", "avg_temp:Q"]
+        tooltip=["plant_name:N", "avg_temp:Q"]
     ).properties(title=f"Top {top_n} Plants by Average Temperature", width=700)
 
     return chart
@@ -63,7 +63,7 @@ def get_average_temperature_per_plant_bar_chart(df, top_n=5):
 @st.cache_data(ttl=3)
 def get_moisture_levels_line_graph(df, plant_name):
     """Line graph that shows the moisture level of a specific plant."""
-    plant_df = df[df["plant_id"] == plant_name]
+    plant_df = df[df["plant_name"] == plant_name]
     chart = alt.Chart(plant_df).mark_line().encode(
         x="recording_taken:T",
         y="soil_moisture:Q",
@@ -76,7 +76,7 @@ def get_moisture_levels_line_graph(df, plant_name):
 def get_average_moisture_level_per_plant_bar_chart(df, top_n=5):
     """Bar chart that shows the top N plants by average moisture."""
     avg_moistures = (
-        df.groupby("plant_id")["soil_moisture"]
+        df.groupby("plant_name")["soil_moisture"]
         .mean()
         .reset_index()
         .rename(columns={'soil_moisture': 'avg_moisture'})
@@ -85,9 +85,9 @@ def get_average_moisture_level_per_plant_bar_chart(df, top_n=5):
     )
 
     chart = alt.Chart(avg_moistures).mark_bar().encode(
-        y=alt.Y("plant_id:N", title="Plant ID", sort="-x"),
+        y=alt.Y("plant_name:N", title="Plant ID", sort="-x"),
         x=alt.X("avg_moisture:Q", title="Average Soil Moisture"),
-        tooltip=["plant_id:N", "avg_moisture:Q"]
+        tooltip=["plant_name:N", "avg_moisture:Q"]
     ).properties(title=f"Top {top_n} Plants by Average Soil Moisture", width=700)
 
     return chart

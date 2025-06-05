@@ -23,6 +23,8 @@ bash set_up_venv.sh
 ```
 
 Then run the ETL steps in order:
-`python3 extract.py`  
-`python3 transform.py`  
-`python3 load.py`  
+```
+python3 extract.py  
+python3 transform.py
+python3 load.py
+```

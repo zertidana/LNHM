@@ -1,19 +1,20 @@
 """Streamlit page for historical data."""
 # pylint: disable=redefined-outer-name, import-error, no-member
-import pandas as pd
 
+import pandas as pd
 
 from visualisations import (get_temperature_heatmap,
                             identify_outliers
                             )
 import streamlit as st
-st.set_page_config(page_title="Historical Data", page_icon="🗂️")
+
+st.set_page_config(page_title="Historical Data", page_icon="🗂️", layout="wide")
 
 
 @st.cache_data(ttl=10)
 def load_historical_data():
     """Loads historical data."""
-    df = pd.read_csv("historical_data_dummy.csv",
+    df = pd.read_csv("data/historical_data_dummy.csv",
                      parse_dates=["last_watered", "date"])
     return df
 
@@ -21,9 +22,6 @@ def load_historical_data():
 if __name__ == "__main__":
     st.title("📈 Historical Data Analysis")
     df = load_historical_data()
-
-    st.subheader("🗓️ Data Overview")
-    st.dataframe(df)
 
     st.subheader("🚨 Plants Needing Attention")
 
@@ -45,3 +43,6 @@ if __name__ == "__main__":
     st.subheader("📊 Daily Average Temperature & Moisture by Plant (Heatmap)")
     heatmap = get_temperature_heatmap(df)
     st.altair_chart(heatmap, use_container_width=True)
+
+    st.subheader("🗓️ Data Overview")
+    st.dataframe(df)

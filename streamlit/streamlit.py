@@ -36,10 +36,11 @@ if __name__ == "__main__":
     FILE_NAME = "data/normalised_day_output.csv"
     df = pd.read_csv(FILE_NAME)
 
-    # st.set_page_config(
-    #     page_title="Plant Analytics",
-    #     page_icon="🌿"
-    # )
+    st.set_page_config(
+        page_title="Plant Analytics",
+        page_icon="🌿",
+        layout="wide"
+    )
     st.title("🌿 Plant Sensor Insights 🌿")
 
     st.subheader("🔍 Filters")

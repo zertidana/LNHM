@@ -1,4 +1,6 @@
-##################### Cloud Provisions #################
+######################### 
+### Cloud Provisions
+#########################
 provider "aws" {
     region = var.AWS_REGION
     access_key = var.AWS_ACCESS_KEY_ID
@@ -13,7 +15,9 @@ data "aws_db_subnet_group" "subnet-group" {
     name = "c17-public-subnet-group"
 }
 
-###################### ECR ############################
+#########################
+### ECR 
+#########################
 data "aws_ecr_repository" "etl_lambda_image_repo" {
     name = "c17-raffles-etl-lambda"
 }
@@ -32,7 +36,9 @@ data "aws_ecr_image" "health_check_image" {
     image_tag       = "latest"
 }
 
-######################### Lambda ##########################
+#########################
+### Lambda 
+#########################
 data "aws_iam_policy_document" "lambda-role-trust-policy-doc" {
     statement {
       effect = "Allow"
@@ -183,7 +189,9 @@ resource "aws_cloudwatch_log_group" "health_check_lambda_logs" {
     retention_in_days = 14
 }
 
-###################### S3 ##########################
+#########################
+### S3 
+#########################
 resource "aws_s3_bucket" "archive_data_bucket" {
     bucket = "c17-raffles-lnhm-bucket"
     force_destroy = true
@@ -199,7 +207,9 @@ resource "aws_s3_object" "output_directory" {
     key     = "output/"
 }
 
-###################### EventBridge ##########################
+######################### 
+### EventBridge 
+#########################
 
 resource "aws_cloudwatch_event_rule" "etl_schedule" {
     name                = "c17-raffles-etl-schedule"

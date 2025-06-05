@@ -1,10 +1,7 @@
-pytest
-pylint
 python-dotenv
 requests
-ipykernel
-logging
+requests-mock
 pandas
-requests_mock
-pyodbc
 sqlalchemy
+pytest
+pylint

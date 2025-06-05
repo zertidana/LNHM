@@ -11,7 +11,7 @@ from visualisations import (get_average_moisture_level_per_plant_bar_chart,
                             get_temperature_line_graph,
                             show_plant_info)
 
-# pylint: disable=no-member
+# pylint: disable=no-member, invalid-name, too-many-arguments, c-extension-no-member
 
 st.set_page_config(
     page_title="Plant Analytics",
@@ -36,6 +36,7 @@ def get_connection(driver, host, port, database, username, password):
 
 @st.cache_data
 def load_data(_connection):
+    """Loads data from DB."""
     query = """
     SELECT plant_name, botanist_name, temperature, soil_moisture, recording_taken, city
     FROM FACT_plant_reading
@@ -49,11 +50,6 @@ def load_data(_connection):
 
     """
     return pd.read_sql(query, _connection)
-
-
-@st.cache_data
-def get_alerts(df) -> pd.DataFrame:
-    pass
 
 
 if __name__ == "__main__":

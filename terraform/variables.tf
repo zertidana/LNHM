@@ -45,3 +45,7 @@ variable "DB_NAME" {
 variable "DB_SCHEMA" {
     type = string
 }
+
+variable "S3_BUCKET" {
+    type = string
+}

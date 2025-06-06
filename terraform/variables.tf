@@ -57,3 +57,9 @@ variable "SES_SOURCE_EMAIL" {
 variable "SES_RECIPIENT_EMAIL" {
     type = string
 }
+
+variable "subnet_ids" {
+    description = "List of subnet IDs where Lambda should run"
+    type        = list(string)
+    default = ["subnet-02fed49230af8b602", "subnet-00c8d9ab175e125f9", "subnet-08d9dabb018bb400b"]
+}

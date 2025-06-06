@@ -7,6 +7,12 @@ provider "aws" {
     secret_key = var.AWS_SECRET_ACCESS_KEY
 }
 
+variable "vpc_id" {
+    description = "VPC ID where RDS is located"
+    type        = string
+    default     = "vpc-00b3f6b2893c390f2"
+}
+
 #########################
 ### ECR 
 #########################
@@ -96,6 +102,49 @@ resource "aws_iam_role_policy" "scheduler_step_function_policy" {
     })
 }
 
+resource "aws_iam_policy" "step_function_policy" {
+  name = "c17-raffles-step-function-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "lambda:InvokeFunction"
+        ]
+        Resource = [
+          aws_lambda_function.etl_lambda.arn,
+          aws_lambda_function.plant_health_alert_lambda.arn
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogDelivery",
+          "logs:GetLogDelivery",
+          "logs:UpdateLogDelivery",
+          "logs:DeleteLogDelivery",
+          "logs:ListLogDeliveries",
+          "logs:PutResourcePolicy",
+          "logs:DescribeResourcePolicies",
+          "logs:DescribeLogGroups"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "states:StartExecution",
+          "states:DescribeExecution",
+          "states:StopExecution"
+        ]
+        Resource = aws_sfn_state_machine.raffles_etl_workflow.arn
+      }
+    ]
+  })
+}
+
 data "aws_iam_policy_document" "lambda_role_trust_policy_doc" {
     statement {
       effect = "Allow"
@@ -117,7 +166,7 @@ data "aws_iam_policy_document" "etl_lambda_role_permissions_policy_doc" {
         "logs:CreateLogStream",
         "logs:PutLogEvents",
       ]
-      resources = [ "arn:aws:logs:eu-west-2:129033205317:*" ]
+      resources = [ "arn:aws:logs:*:*:*" ]
     }
 
     statement {
@@ -272,6 +321,12 @@ resource "aws_iam_role_policy_attachment" "plant_health_alert_lambda_role_policy
   policy_arn = aws_iam_policy.plant_health_alert_lambda_role_permissions_policy.arn
 }
 
+
+resource "aws_iam_role_policy_attachment" "step_function_policy_attachment" {
+  role       = aws_iam_role.step_function_role.name
+  policy_arn = aws_iam_policy.step_function_policy.arn
+}
+
 #########################
 ### Lambda 
 #########################
@@ -281,6 +336,10 @@ resource "aws_lambda_function" "etl_lambda" {
     package_type = "Image"
     image_uri = data.aws_ecr_image.etl_lambda_image.image_uri
     timeout = 120
+    vpc_config {
+        subnet_ids         = var.subnet_ids
+        security_group_ids = [aws_security_group.lambda_sg.id]
+    }
     environment {
         variables = {
             BASE_URL = var.BASE_URL
@@ -332,6 +391,23 @@ resource "aws_lambda_function" "plant_health_alert_lambda" {
     }
 }
 
+resource "aws_security_group" "lambda_sg" {
+    name        = "c17-raffles-lambda-sg"
+    description = "Security group for Lambda functions"
+    vpc_id      = var.vpc_id
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags = {
+        Name = "c17-raffles-lambda-sg"
+    }
+}
+
 #########################
 ### Cloudwatch Log Group 
 #########################
@@ -354,6 +430,14 @@ resource "aws_cloudwatch_log_group" "archiver_lambda_logs" {
 
 resource "aws_cloudwatch_log_group" "plant_health_alert_lambda_logs" {
     name              = "/aws/lambda/${aws_lambda_function.plant_health_alert_lambda.function_name}"
+    retention_in_days = 14
+    lifecycle {
+        create_before_destroy = true
+    }
+}
+
+resource "aws_cloudwatch_log_group" "step_function_logs" {
+    name              = "/aws/states/c17-raffles-etl-alerts-workflow"
     retention_in_days = 14
     lifecycle {
         create_before_destroy = true
@@ -475,49 +559,55 @@ resource "aws_lambda_permission" "allow_step_function_alerter" {
 #########################
 
 resource "aws_sfn_state_machine" "raffles_etl_workflow" {
-  name     = "c17-raffles-etl-alerts-workflow"
-  role_arn = aws_iam_role.step_function_role.arn
+    name     = "c17-raffles-etl-alerts-workflow"
+    role_arn = aws_iam_role.step_function_role.arn
 
-  definition = jsonencode({
-    Comment = "ETL and Alert workflow with data passing"
-    StartAt = "RunETLLambda"
-    States = {
-      RunETLLambda = {
-        Type = "Task"
-        Resource = aws_lambda_function.etl_lambda.arn
-        ResultPath = "$.etl_result"
-        Next = "RunAlerterLambda"
-        Catch = [
-          {
-            ErrorEquals = ["States.ALL"]
-            Next = "HandleETLFailure"
-            ResultPath = "$.error"
-          }
-        ]
-      }
-      RunAlerterLambda = {
-        Type = "Task"
-        Resource = aws_lambda_function.plant_health_alert_lambda.arn
-        InputPath = "$"
-        End = true
-        Catch = [
-          {
-            ErrorEquals = ["States.ALL"]
-            Next = "HandleAlerterFailure"
-            ResultPath = "$.error"
-          }
-        ]
-      }
-      HandleETLFailure = {
-        Type = "Fail"
-        Cause = "ETL Lambda failed"
-        Error = "ETLLambdaError"
-      }
-      HandleAlerterFailure = {
-        Type = "Fail"
-        Cause = "Alerter Lambda failed"
-        Error = "AlerterLambdaError"
-      }
+    definition = jsonencode({
+        Comment = "ETL and Alert workflow with data passing"
+        StartAt = "RunETLLambda"
+        States = {
+        RunETLLambda = {
+            Type = "Task"
+            Resource = aws_lambda_function.etl_lambda.arn
+            ResultPath = "$.etl_result"
+            Next = "RunAlerterLambda"
+            Catch = [
+            {
+                ErrorEquals = ["States.ALL"]
+                Next = "HandleETLFailure"
+                ResultPath = "$.error"
+            }
+            ]
+        }
+        RunAlerterLambda = {
+            Type = "Task"
+            Resource = aws_lambda_function.plant_health_alert_lambda.arn
+            InputPath = "$"
+            End = true
+            Catch = [
+            {
+                ErrorEquals = ["States.ALL"]
+                Next = "HandleAlerterFailure"
+                ResultPath = "$.error"
+            }
+            ]
+        }
+        HandleETLFailure = {
+            Type = "Fail"
+            Cause = "ETL Lambda failed"
+            Error = "ETLLambdaError"
+        }
+        HandleAlerterFailure = {
+            Type = "Fail"
+            Cause = "Alerter Lambda failed"
+            Error = "AlerterLambdaError"
+        }
+        }
+    })
+
+    logging_configuration {
+        level                  = "ALL"
+        include_execution_data = true
+        log_destination        = "${aws_cloudwatch_log_group.step_function_logs.arn}:*"
     }
-  })
 }

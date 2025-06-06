@@ -45,3 +45,15 @@ variable "DB_NAME" {
 variable "DB_SCHEMA" {
     type = string
 }
+
+variable "S3_BUCKET" {
+    type = string
+}
+
+variable "SES_SOURCE_EMAIL" {
+    type = string
+}
+
+variable "SES_RECIPIENT_EMAIL" {
+    type = string
+}

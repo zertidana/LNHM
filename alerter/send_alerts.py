@@ -27,8 +27,13 @@ def create_s3_client() -> client:
 def extract_error_from_event(event) -> pd.DataFrame:
     """Extract the error dataframe from the AWS Step Function."""
     logger = get_logger()
+
     logger.info("Collecting plant errors from last ETL run...")
-    error_data = event.get("error_data", [])
+    if isinstance(event, dict):
+        error_data = event.get("etl_result", {}).get("error_data", [])
+    else:
+        error_data = []
+
     if not error_data:
         logger.info("No plant health readings contain errors.")
         return pd.DataFrame()
@@ -78,7 +83,7 @@ def send_ses_email(ses_client: client, html_content: str, error_count: int) -> N
         response = ses_client.send_email(
             Source=ENV["SES_SOURCE_EMAIL"],
             Destination={
-                "ToAddresses": ENV["SES_RECIPIENTS"].split(",")
+                "ToAddresses": [ENV["SES_RECIPIENT"]]
             },
             Message={
                 "Subject": {
@@ -114,12 +119,16 @@ def get_previous_alerts_from_s3(s3_client: client) -> pd.DataFrame:
             file_obj = s3_client.get_object(Bucket=ENV["S3_BUCKET"], Key=key)
             file_content = file_obj["Body"].read().decode("utf-8")
             df = pd.read_json(file_content)
+
+            if "last_alert" in df.columns:
+                df["last_alert"] = pd.to_datetime(df["last_alert"], utc=True)
+
             dfs.append(df)
 
         combined_df = pd.concat(
             dfs, ignore_index=True) if dfs else pd.DataFrame()
-        logger.info(
-            "Loaded %s previous alert records from S3.", len(combined_df))
+        logger.info("Loaded %s previous alert records from S3.",
+                    len(combined_df))
         return combined_df
 
     except BotoCoreError as e:

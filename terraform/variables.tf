@@ -54,7 +54,7 @@ variable "SES_SOURCE_EMAIL" {
     type = string
 }
 
-variable "SES_RECIPIENT_EMAIL" {
+variable "SES_RECIPIENT" {
     type = string
 }
 

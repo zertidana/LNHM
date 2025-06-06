@@ -42,8 +42,12 @@ def insert_transformed_data(transformed_data: pd.DataFrame = None) -> pd.DataFra
 
     logger.info("Successfully inserted data!")
 
-    # Return data that is only errors for step function
-    return transformed_data[transformed_data['error_msg'].notna()]
+    error_data = transformed_data.loc[
+        transformed_data['error_msg'].notna(), ['plant_id', 'error_msg']
+    ].copy()
+    error_data.rename(columns={'error_msg': 'error'}, inplace=True)
+    error_data = error_data.where(pd.notnull(error_data), None)
+    return error_data
 
 
 if __name__ == "__main__":

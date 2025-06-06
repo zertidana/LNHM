@@ -7,11 +7,6 @@ provider "aws" {
     secret_key = var.AWS_SECRET_ACCESS_KEY
 }
 
-data "aws_vpc" "c17-vpc" {
-    id = var.VPC_ID
-}
-
-
 #########################
 ### ECR 
 #########################
@@ -41,16 +36,6 @@ data "aws_ecr_image" "plant_health_alert_image" {
     repository_name = data.aws_ecr_repository.plant_health_alert_image_repo.name
     image_tag       = "latest"
 }
-
-# data "aws_ecr_repository" "health_check_image_repo" {
-#     name = "c17-raffles-plant-health-lambda"
-# }
-
-# data "aws_ecr_image" "health_check_image" {
-#     repository_name = data.aws_ecr_repository.health_check_image_repo.name
-#     image_tag       = "latest"
-# }
-
 
 #########################
 ### IAM 
@@ -244,6 +229,12 @@ data "aws_iam_policy_document" "plant_health_alert_lambda_role_permissions_polic
 
   statement {
     effect = "Allow"
+    actions = ["s3:ListBucket"]
+    resources = ["arn:aws:s3:::c17-raffles-lnhm-bucket"]
+  }
+
+  statement {
+    effect = "Allow"
     actions = [
       "s3:GetObject",
       "s3:PutObject"
@@ -259,8 +250,8 @@ data "aws_iam_policy_document" "plant_health_alert_lambda_role_permissions_polic
     ]
     resources = ["*"]
   }
-
 }
+
 
 resource "aws_iam_policy" "step_function_lambda_invoke_policy" {
   name = "c17-raffles-step-function-lambda-invoke-policy"
@@ -339,16 +330,13 @@ resource "aws_iam_role_policy_attachment" "step_function_policy_attachment" {
 #########################
 ### Lambda 
 #########################
+
 resource "aws_lambda_function" "etl_lambda" {
     function_name = "c17-raffles-etl-lambda"
     role = aws_iam_role.etl_lambda_role.arn
     package_type = "Image"
     image_uri = data.aws_ecr_image.etl_lambda_image.image_uri
     timeout = 120
-    vpc_config {
-        subnet_ids         = var.SUBNET_IDS
-        security_group_ids = [aws_security_group.lambda_sg.id]
-    }
     environment {
         variables = {
             BASE_URL = var.BASE_URL
@@ -389,12 +377,12 @@ resource "aws_lambda_function" "plant_health_alert_lambda" {
     role = aws_iam_role.plant_health_alert_lambda_role.arn
     package_type = "Image"
     image_uri = data.aws_ecr_image.plant_health_alert_image.image_uri
-    timeout = 30
+    timeout = 120
     environment {
         variables = {
             S3_BUCKET = var.S3_BUCKET
             SES_REGION = var.AWS_REGION
-            SES_RECIPIENT_EMAIL = var.SES_RECIPIENT_EMAIL
+            SES_RECIPIENT = var.SES_RECIPIENT
             SES_SOURCE_EMAIL = var.SES_SOURCE_EMAIL
         }
     }
@@ -575,42 +563,42 @@ resource "aws_sfn_state_machine" "raffles_etl_workflow" {
         Comment = "ETL and Alert workflow with data passing"
         StartAt = "RunETLLambda"
         States = {
-        RunETLLambda = {
-            Type = "Task"
-            Resource = aws_lambda_function.etl_lambda.arn
-            ResultPath = "$.etl_result"
-            Next = "RunAlerterLambda"
-            Catch = [
-            {
-                ErrorEquals = ["States.ALL"]
-                Next = "HandleETLFailure"
-                ResultPath = "$.error"
+            RunETLLambda = {
+                Type = "Task"
+                Resource = aws_lambda_function.etl_lambda.arn
+                ResultPath = "$.etl_result"
+                Next = "RunAlerterLambda"
+                Catch = [
+                    {
+                        ErrorEquals = ["States.ALL"]
+                        Next = "HandleETLFailure"
+                        ResultPath = "$.error"
+                    }
+                ]
             }
-            ]
-        }
-        RunAlerterLambda = {
-            Type = "Task"
-            Resource = aws_lambda_function.plant_health_alert_lambda.arn
-            InputPath = "$"
-            End = true
-            Catch = [
-            {
-                ErrorEquals = ["States.ALL"]
-                Next = "HandleAlerterFailure"
-                ResultPath = "$.error"
+            RunAlerterLambda = {
+                Type = "Task"
+                Resource = aws_lambda_function.plant_health_alert_lambda.arn
+                InputPath = "$"
+                End = true
+                Catch = [
+                    {
+                        ErrorEquals = ["States.ALL"]
+                        Next = "HandleAlerterFailure"
+                        ResultPath = "$.error"
+                    }
+                ]
             }
-            ]
-        }
-        HandleETLFailure = {
-            Type = "Fail"
-            Cause = "ETL Lambda failed"
-            Error = "ETLLambdaError"
-        }
-        HandleAlerterFailure = {
-            Type = "Fail"
-            Cause = "Alerter Lambda failed"
-            Error = "AlerterLambdaError"
-        }
+            HandleETLFailure = {
+                Type = "Fail"
+                Cause = "ETL Lambda failed"
+                Error = "ETLLambdaError"
+            }
+            HandleAlerterFailure = {
+                Type = "Fail"
+                Cause = "Alerter Lambda failed"
+                Error = "AlerterLambdaError"
+            }
         }
     })
 

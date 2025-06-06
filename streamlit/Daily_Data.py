@@ -23,6 +23,23 @@ st.set_page_config(
     layout="wide"
 )
 
+# st.markdown("""
+#     <style>
+#     @font-face {
+#         font-family: 'Thicker';
+#         src: url('path_to_your_font/Thicker-Regular.woff2') format('woff2'),
+#              url('path_to_your_font/Thicker-Regular.ttf') format('truetype');
+#         font-weight: normal;
+#         font-style: normal;
+#     }
+
+#     html, body, [class*="css"], .stApp, .stTextInput, .stButton, .stMarkdown, .stSidebar,
+#     .css-18ni7ap, .css-1d391kg, .css-1v0mbdj, .css-1kyxreq {
+#         font-family: 'Thicker', sans-serif !important;
+#     }
+#     </style>
+#     """, unsafe_allow_html=True)
+
 
 @st.cache_resource
 def get_connection(driver, host, port, database, username, password):

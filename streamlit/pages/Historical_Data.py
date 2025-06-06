@@ -6,8 +6,10 @@ from dotenv import load_dotenv
 import pandas as pd
 import streamlit as st
 
-from visualisations.visualisations_archived_data import (get_temperature_line_chart, get_moisture_levels_line_graph_archived,
-                                                         identify_outliers, get_moisture_boxplot
+from visualisations.visualisations_archived_data import (get_moisture_boxplot,
+                                                         get_moisture_levels_line_graph_archived,
+                                                         get_temperature_line_chart,
+                                                         identify_outliers
                                                          )
 
 

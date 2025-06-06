@@ -15,7 +15,8 @@ load_dotenv()
 
 
 def test_daily_summary_valid():
-    """Tests daily summary function with correctly formatted columns."""
+    """Tests daily summary function with correctly formatted columns.
+    Covers errors, multiple plant readings, and most recent date formatting."""
     example_dataframe = pd.DataFrame({
         'temperature': [14.2348248, 18.24294824, 24.43248374234, 33.242424, 28.3323],
         'soil_moisture': [98.42424, 97.324325325, 96.324324324324, 99.242424, 99.55],
@@ -53,7 +54,7 @@ def test_daily_summary_valid():
 
 
 def test_daily_summary_all_errors():
-    """Tests daily summary function with all rows being errors."""
+    """Tests daily summary function with all rows being errors. Test should return an empty dataframe."""
     example_dataframe = pd.DataFrame({
         'temperature': [14.2348248, 18.24294824, 24.43248374234, 33.242424, 28.3323],
         'soil_moisture': [98.42424, 97.324325325, 96.324324324324, 99.242424, 99.55],

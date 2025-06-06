@@ -4,6 +4,7 @@ from os import environ as ENV, path
 from dotenv import load_dotenv
 import sqlalchemy
 import pandas as pd
+import pyodbc
 
 from utilities import get_logger, set_logger, load_csv_data
 
@@ -32,7 +33,7 @@ def insert_transformed_data(transformed_data: pd.DataFrame = None) -> pd.DataFra
             connect_args={'connect_timeout': 10,
                           'TrustServerCertificate': 'yes'},
             echo=False)
-    except Exception as exc:
+    except pyodbc.DataError as exc:
         logger.critical(exc)
         raise exc
 

@@ -9,7 +9,7 @@ from utilities import get_logger, set_logger, load_csv_data
 
 
 def insert_transformed_data(transformed_data: pd.DataFrame = None) -> pd.DataFrame:
-    """Function that calls connect function, and inserts into the Microsoft SQL database.
+    """Calls the connect function to inserts daily data into Microsoft SQL server database.
     Dataframe that is returned consists of only rows that have errors, for step function"""
     logger = get_logger()
 

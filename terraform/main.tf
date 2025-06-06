@@ -7,11 +7,10 @@ provider "aws" {
     secret_key = var.AWS_SECRET_ACCESS_KEY
 }
 
-variable "vpc_id" {
-    description = "VPC ID where RDS is located"
-    type        = string
-    default     = "vpc-00b3f6b2893c390f2"
+data "aws_vpc" "c17-vpc" {
+    id = var.VPC_ID
 }
+
 
 #########################
 ### ECR 
@@ -42,6 +41,16 @@ data "aws_ecr_image" "plant_health_alert_image" {
     repository_name = data.aws_ecr_repository.plant_health_alert_image_repo.name
     image_tag       = "latest"
 }
+
+# data "aws_ecr_repository" "health_check_image_repo" {
+#     name = "c17-raffles-plant-health-lambda"
+# }
+
+# data "aws_ecr_image" "health_check_image" {
+#     repository_name = data.aws_ecr_repository.health_check_image_repo.name
+#     image_tag       = "latest"
+# }
+
 
 #########################
 ### IAM 
@@ -337,7 +346,7 @@ resource "aws_lambda_function" "etl_lambda" {
     image_uri = data.aws_ecr_image.etl_lambda_image.image_uri
     timeout = 120
     vpc_config {
-        subnet_ids         = var.subnet_ids
+        subnet_ids         = var.SUBNET_IDS
         security_group_ids = [aws_security_group.lambda_sg.id]
     }
     environment {
@@ -394,7 +403,7 @@ resource "aws_lambda_function" "plant_health_alert_lambda" {
 resource "aws_security_group" "lambda_sg" {
     name        = "c17-raffles-lambda-sg"
     description = "Security group for Lambda functions"
-    vpc_id      = var.vpc_id
+    vpc_id      = var.VPC_ID
 
     egress {
         from_port   = 0

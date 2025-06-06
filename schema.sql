@@ -37,7 +37,7 @@ CREATE TABLE DIM_plant (
 );
 
 CREATE TABLE FACT_plant_reading (
-    plant_health_id SMALLINT IDENTITY(1,1) PRIMARY KEY,
+    plant_health_id BIGINT IDENTITY(1,1) PRIMARY KEY,
     temperature FLOAT,
     soil_moisture FLOAT,
     recording_taken DATETIME2,

@@ -53,6 +53,16 @@ def clean_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
         new_dataframe = new_dataframe[new_dataframe[col].isna() | pd.to_numeric(
             new_dataframe[col], errors='coerce').notna()]
 
+    # If soil_moisture < 30, then update error value for alerts
+    new_dataframe.loc[new_dataframe['soil_moisture']
+                      < 30, 'error_msg'] = 'low soil moisture error'
+
+    # If temperature > 30C & temperature < 10C then update error value for alerts
+    new_dataframe.loc[new_dataframe['temperature']
+                      <= 10, 'error_msg'] = 'low temperature error'
+    new_dataframe.loc[new_dataframe['temperature']
+                      >= 30, 'error_msg'] = 'high temperature error'
+
     # Checking for minus values, if minus then update error value
     numeric_cols = new_dataframe.select_dtypes(include=['number']).columns
     negative_mask = (new_dataframe[numeric_cols] < 0).any(axis=1)
@@ -109,7 +119,7 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
         logger.info("Also adding cleaned plant data on %s to %s...",
                     today.strftime("%Y-%m-%d %H:%M:%S"), file_path_day)
         output_dataframe.to_csv(
-            file_path_day, header=True, index=False, mode='a')
+            file_path_day, index=False)
     logger.info("Successfully wrote data to %s!", file_path_day)
 
 
@@ -132,10 +142,13 @@ def summarise_day_from_csv(datetime_value: datetime, file_path_day: str = 'data/
                 output_path_historical)
 
 
-def dataframe_daily_summary(df: pd.DataFrame, date: datetime):
+def dataframe_daily_summary(df: pd.DataFrame, date: datetime) -> pd.DataFrame:
     """Returns a daily summary of plant health data for a given day."""
     logger = get_logger()
-    summarised_day_data = df.groupby('plant_id').agg({
+
+    df_valid = df[df['error_msg'].isna()].copy()
+
+    summarised_day_data = df_valid.groupby('plant_id').agg({
         'temperature': 'mean',
         'soil_moisture': 'mean',
         'recording_taken': 'count',
@@ -156,4 +169,6 @@ def dataframe_daily_summary(df: pd.DataFrame, date: datetime):
 
 if __name__ == "__main__":
     set_logger()
-    save_dataframe_to_csv(clean_dataframe_from_csv())
+    df = clean_dataframe_from_csv()
+    # save_dataframe_to_csv(df)
+    summarise_day_from_csv(datetime.date.today() - datetime.timedelta(days=1))

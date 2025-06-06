@@ -43,7 +43,7 @@ def load_historical_data():
 
 if __name__ == "__main__":
     local_df = pd.read_csv(
-        "data/plant_ids_names.csv", na_values=["NULL"])
+        "streamlit/data/plant_ids_names.csv", na_values=["NULL"])
 
     s3_df = load_historical_data()
 
@@ -85,7 +85,6 @@ if __name__ == "__main__":
 
     filtered_df = df[df["plant_name"].isin(selected)]
 
-    st.write(plant_names)
     if selected:
         line_chart = get_temperature_line_chart(df, selected)
         st.altair_chart(line_chart, use_container_width=True)

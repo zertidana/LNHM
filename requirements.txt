@@ -11,3 +11,5 @@ boto3
 pyodbc
 sqlalchemy
 streamlit
+fsspec
+s3fs

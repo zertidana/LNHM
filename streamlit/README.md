@@ -10,7 +10,6 @@ A Streamlit-based web application for monitoring plant health, built for the Liv
 - `Daily_Data.py`: Main Streamlit page containing the live data.
 
 
-
 ### 📍 Folder Navigation
 - `visualisations/`: Scripts with the visualisations used in the streamlit pages.
 - `pages/`: Has the historical page here.

@@ -1,11 +1,11 @@
 """A script which archives a summary of short term 
 storage data (last 24hr) as a CSV file and uploads to AWS S3."""
-import sqlalchemy
-import pandas as pd
 import io
-from dotenv import load_dotenv
 from datetime import datetime
 from os import environ as ENV
+import sqlalchemy
+import pandas as pd
+from dotenv import load_dotenv
 from boto3 import client
 from utilities import set_logger, get_logger
 

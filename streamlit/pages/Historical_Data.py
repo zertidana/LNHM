@@ -1,14 +1,14 @@
 """Streamlit page for historical data."""
 # pylint: disable=redefined-outer-name, import-error, no-member
+import sys
 import os
 from dotenv import load_dotenv
 import pandas as pd
-
-from visualisations import (get_temperature_line_chart, get_moisture_levels_line_graph_archived,
-                            identify_outliers, get_moisture_boxplot
-                            )
 import streamlit as st
-import boto3
+
+from visualisations_archived_data import (get_temperature_line_chart, get_moisture_levels_line_graph_archived,
+                                          identify_outliers, get_moisture_boxplot
+                                          )
 
 
 st.set_page_config(page_title="Historical Data", page_icon="🗂️", layout="wide")
@@ -62,40 +62,40 @@ if __name__ == "__main__":
     }))
 
     st.subheader("🌡️ Daily Average Temperature by Plant (Line Chart)")
-    plant_names = sorted(df["plant_name"].unique())
+    plant_ids = sorted(df["plant_id"].unique())
     select_all = st.checkbox("Select All Plants", value=True)
     if select_all:
-        selected = plant_names
+        selected = plant_ids
     else:
         selected = st.multiselect(
-            "Select specific plant(s)", plant_names, default=[])
+            "Select specific plant(s)", plant_ids, default=[])
 
-    filtered_df = df[df["plant_name"].isin(selected)]
+    filtered_df = df[df["plant_id"].isin(selected)]
 
-    if not filtered_df.empty:
+    if selected:
         line_chart = get_temperature_line_chart(df, selected)
         st.altair_chart(line_chart, use_container_width=True)
     else:
         st.warning("No plants selected.")
 
     st.subheader("💦 Daily Average Moisture by Plant (Line Graph)")
-    plant_names = df["plant_name"].unique()
-    selected_plant = st.selectbox("Select Plant Name", sorted(plant_names))
+    plant_ids = df["plant_id"].unique()
+    selected_plant = st.selectbox("Select Plant Name", sorted(plant_ids))
     moisture_line_graph = get_moisture_levels_line_graph_archived(
         df, selected_plant)
     st.altair_chart(moisture_line_graph, use_container_width=True)
 
     st.subheader("Daily Moisture Distribution by Plant")
-    plant_names = sorted(df["plant_name"].unique())
+    plant_ids = sorted(df["plant_id"].unique())
     select_all = st.checkbox("Select all plants", value=True)
 
     if select_all:
-        selected_plants = plant_names
+        selected_plants = plant_ids
     else:
         selected_plants = st.multiselect(
-            "Select Plant(s)", plant_names, default=[])
+            "Select Plant(s)", plant_ids, default=[])
 
-    filtered_df = df[df["plant_name"].isin(selected_plants)]
+    filtered_df = df[df["plant_id"].isin(selected_plants)]
     # Only show the plot if there's data selected
     if not filtered_df.empty:
         moisture_boxplot = get_moisture_boxplot(filtered_df)

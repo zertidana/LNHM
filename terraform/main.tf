@@ -42,9 +42,46 @@ data "aws_ecr_image" "archive_lambda_image" {
 #     image_tag       = "latest"
 # }
 
+
 #########################
-### Lambda 
+### IAM 
 #########################
+resource "aws_iam_role" "scheduler_role" {
+    name = "c17-raffles-scheduler-role"
+
+    assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+        {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+            Service = "scheduler.amazonaws.com"
+        }
+        }
+    ]
+    })
+}
+
+resource "aws_iam_role_policy" "scheduler_lambda_policy" {
+    name = "scheduler-lambda-invoke"
+    role = aws_iam_role.scheduler_role.id
+
+    policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+        {
+        Effect = "Allow"
+        Action = "lambda:InvokeFunction"
+        Resource = [
+            aws_lambda_function.etl_lambda.arn,
+            aws_lambda_function.archiver_lambda.arn
+        ]
+        }
+    ]
+    })
+}
+
 data "aws_iam_policy_document" "lambda_role_trust_policy_doc" {
     statement {
       effect = "Allow"
@@ -152,6 +189,9 @@ resource "aws_iam_role_policy_attachment" "archiver_lambda_role_policy_connectio
   policy_arn = aws_iam_policy.archiver_lambda_role_permissions_policy.arn
 }
 
+#########################
+### Lambda 
+#########################
 resource "aws_lambda_function" "etl_lambda" {
     function_name = "c17-raffles-etl-lambda"
     role = aws_iam_role.etl_lambda_role.arn
@@ -262,43 +302,6 @@ resource "aws_s3_object" "output_directory" {
 ### EventBridge Scheduler
 #########################
 
-# Roles
-resource "aws_iam_role" "scheduler_role" {
-    name = "c17-raffles-scheduler-role"
-
-    assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-        {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-            Service = "scheduler.amazonaws.com"
-        }
-        }
-    ]
-    })
-}
-
-resource "aws_iam_role_policy" "scheduler_lambda_policy" {
-    name = "scheduler-lambda-invoke"
-    role = aws_iam_role.scheduler_role.id
-
-    policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-        {
-        Effect = "Allow"
-        Action = "lambda:InvokeFunction"
-        Resource = [
-            aws_lambda_function.etl_lambda.arn,
-            aws_lambda_function.archiver_lambda.arn
-        ]
-        }
-    ]
-    })
-}
-
 # ETL Event Scheduler
 resource "aws_scheduler_schedule_group" "etl_group" {
     name = "c17-raffles-etl-group"
@@ -338,7 +341,6 @@ resource "aws_lambda_permission" "allow_etl_scheduler" {
 }
 
 # Archiver Scheduler
-
 resource "aws_scheduler_schedule_group" "archiver_group" {
     name = "c17-raffles-archiver-group"
 }

@@ -1,14 +1,16 @@
 """Streamlit Dashboard."""
-
+import os
 import pandas as pd
 from dotenv import load_dotenv
 import streamlit as st
+import boto3
 
 from visualisations import (get_average_moisture_level_per_plant_bar_chart,
                             get_average_temperature_per_plant_bar_chart,
                             get_moisture_levels_line_graph,
                             get_temperature_line_graph,
                             show_plant_info)
+
 
 # pylint: disable=no-member
 

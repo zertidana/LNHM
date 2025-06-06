@@ -4,9 +4,11 @@ import io
 from datetime import datetime
 from os import environ as ENV
 import sqlalchemy
+from sqlalchemy.exc import SQLAlchemyError
 import pandas as pd
 from dotenv import load_dotenv
 from boto3 import client
+from botocore.exceptions import BotoCoreError, ClientError
 from utilities import set_logger, get_logger
 
 
@@ -52,7 +54,7 @@ def get_day_plant_readings(engine: sqlalchemy.Engine) -> pd.DataFrame:
         query = "SELECT * FROM FACT_plant_reading"
         logger.info("Successfully retrieved daily plant data.")
         return pd.read_sql(query, engine)
-    except Exception as exc:
+    except SQLAlchemyError as exc:
         logger.critical(exc)
         raise exc
 
@@ -65,7 +67,7 @@ def cleanup_plant_readings(engine: sqlalchemy.Engine) -> None:
             conn.execute(sqlalchemy.text("DELETE FROM FACT_plant_reading"))
             conn.commit()
             logger.info("All rows deleted from FACT_plant_reading.")
-        except Exception as exc:
+        except SQLAlchemyError as exc:
             logger.critical(exc)
             raise exc
 
@@ -80,11 +82,15 @@ def upload_day_summary_as_csv(df: pd.DataFrame) -> None:
     csv_buffer = io.StringIO()
     df.to_csv(csv_buffer, index=False)
 
-    s3_client.put_object(
-        Bucket=ENV["S3_BUCKET"],
-        Key=f"daily_summaries/plant_readings_{datetime.now():%Y-%m-%d}.csv",
-        Body=csv_buffer.getvalue()
-    )
+    try:
+        s3_client.put_object(
+            Bucket=ENV["S3_BUCKET"],
+            Key=f"daily_summaries/plant_readings_{datetime.now():%Y-%m-%d}.csv",
+            Body=csv_buffer.getvalue()
+        )
+    except (BotoCoreError, ClientError) as exc:
+        get_logger().critical("S3 upload failed: %s", exc)
+        raise
 
 
 def run_summarise_and_delete() -> None:
@@ -108,12 +114,14 @@ def archive_lambda_handler(event, context):
             "body": "Succesfully summarised daily "
             "plant readings, uploaded to S3 and cleaned up the db."
         }
-    except Exception as e:
+    except (SQLAlchemyError, BotoCoreError,
+            ClientError) as exc:
         return {
             "statusCode": 500,
-            "body": f"S3 Archiver failed: {str(e)}"
+            "body": f"S3 Archiver failed due to processing error: {str(exc)}"
         }
 
 
 if __name__ == "__main__":
-    run_summarise_and_delete()
+    pass
+    # run_summarise_and_delete()

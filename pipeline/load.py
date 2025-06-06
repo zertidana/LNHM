@@ -4,12 +4,14 @@ from os import environ as ENV, path
 from dotenv import load_dotenv
 import sqlalchemy
 import pandas as pd
+import pyodbc
 
 from utilities import get_logger, set_logger, load_csv_data
 
 
-def insert_transformed_data(transformed_data: pd.DataFrame = None) -> None:
-    """Function that calls connect function, and inserts into the Microsoft SQL database"""
+def insert_transformed_data(transformed_data: pd.DataFrame = None) -> pd.DataFrame:
+    """Calls the connect function to inserts daily data into Microsoft SQL server database.
+    Dataframe that is returned consists of only rows that have errors, for step function"""
     logger = get_logger()
 
     if transformed_data is None:
@@ -23,19 +25,25 @@ def insert_transformed_data(transformed_data: pd.DataFrame = None) -> None:
                 "No csv file found at path: data/normalised_minute_output.csv, "
                 "please run the previous pipeline steps to generate it.")
 
-    logger.info(transformed_data)
-
     logger.info("Inserting data into database setup...")
-    engine = sqlalchemy.create_engine(
-        (f"mssql+pyodbc://{ENV['DB_USER']}:{ENV['DB_PASSWORD']}"
-         f"@{ENV['DB_HOST']}/{ENV['DB_NAME']}?driver={ENV['DB_DRIVER']}"),
-        connect_args={'connect_timeout': 10, 'TrustServerCertificate': 'yes'},
-        echo=False)
+    try:
+        engine = sqlalchemy.create_engine(
+            (f"mssql+pyodbc://{ENV['DB_USER']}:{ENV['DB_PASSWORD']}"
+             f"@{ENV['DB_HOST']}/{ENV['DB_NAME']}?driver={ENV['DB_DRIVER']}"),
+            connect_args={'connect_timeout': 10,
+                          'TrustServerCertificate': 'yes'},
+            echo=False)
+    except pyodbc.DataError as exc:
+        logger.critical(exc)
+        raise exc
 
     transformed_data.to_sql('FACT_plant_reading',
                             engine, index=False, if_exists='append')
 
     logger.info("Successfully inserted data!")
+
+    # Return data that is only errors for step function
+    return transformed_data[transformed_data['error_msg'].notna()]
 
 
 if __name__ == "__main__":

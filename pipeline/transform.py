@@ -53,6 +53,16 @@ def clean_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
         new_dataframe = new_dataframe[new_dataframe[col].isna() | pd.to_numeric(
             new_dataframe[col], errors='coerce').notna()]
 
+    # If soil_moisture < 30, then update error value for alerts
+    new_dataframe.loc[new_dataframe['soil_moisture']
+                      < 30, 'error_msg'] = 'low soil moisture error'
+
+    # If temperature > 30C & temperature < 10C then update error value for alerts
+    new_dataframe.loc[new_dataframe['temperature']
+                      <= 10, 'error_msg'] = 'low temperature error'
+    new_dataframe.loc[new_dataframe['temperature']
+                      >= 30, 'error_msg'] = 'high temperature error'
+
     # Checking for minus values, if minus then update error value
     numeric_cols = new_dataframe.select_dtypes(include=['number']).columns
     negative_mask = (new_dataframe[numeric_cols] < 0).any(axis=1)

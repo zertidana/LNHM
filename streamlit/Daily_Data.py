@@ -92,6 +92,7 @@ if __name__ == "__main__":
     plant_name = st.selectbox("Plant name", df["plant_name"].unique())
     df["recording_taken"] = pd.to_datetime(
         df["recording_taken"], format='ISO8601')
+    st.image(df[plant_name], width=100)
     show_plant_info(df, plant_name)
 
     st.subheader("🌡️ Plant Temperature Recordings")

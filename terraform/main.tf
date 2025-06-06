@@ -396,7 +396,7 @@ resource "aws_lambda_function" "plant_health_alert_lambda" {
         variables = {
             S3_BUCKET = var.S3_BUCKET
             SES_REGION = var.AWS_REGION
-            SES_RECIPIENT_EMAIL = var.SES_RECIPIENT
+            SES_RECIPIENT = var.SES_RECIPIENT
             SES_SOURCE_EMAIL = var.SES_SOURCE_EMAIL
         }
     }

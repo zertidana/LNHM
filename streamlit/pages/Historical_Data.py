@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 import pandas as pd
 import streamlit as st
 
-from visualisations_archived_data import (get_temperature_line_chart, get_moisture_levels_line_graph_archived,
-                                          identify_outliers, get_moisture_boxplot
-                                          )
+from visualisations.visualisations_archived_data import (get_temperature_line_chart, get_moisture_levels_line_graph_archived,
+                                                         identify_outliers, get_moisture_boxplot
+                                                         )
 
 
 st.set_page_config(page_title="Historical Data", page_icon="🗂️", layout="wide")
@@ -40,9 +40,21 @@ def load_historical_data():
 
 
 if __name__ == "__main__":
+    local_df = pd.read_csv(
+        "data/plant_ids_names.csv", na_values=["NULL"])
+
+    s3_df = load_historical_data()
+
+    print(local_df[['plant_id', 'plant_name']])
+
+    print("local_df columns:", local_df.columns.tolist())
+    print("s3_df columns:", s3_df.columns.tolist())
+
+    df = pd.merge(local_df, s3_df, on="plant_id", how="left")
+
+    print(df)
 
     st.title("📈 Historical Data Analysis")
-    df = load_historical_data()
 
     st.subheader("🚨 Plants Needing Attention")
 
@@ -62,16 +74,16 @@ if __name__ == "__main__":
     }))
 
     st.subheader("🌡️ Daily Average Temperature by Plant (Line Chart)")
-    plant_ids = sorted(df["plant_id"].unique())
+    st.write(df.columns)
+    plant_names = df["plant_name"].unique()
     select_all = st.checkbox("Select All Plants", value=True)
-    if select_all:
-        selected = plant_ids
-    else:
-        selected = st.multiselect(
-            "Select specific plant(s)", plant_ids, default=[])
 
-    filtered_df = df[df["plant_id"].isin(selected)]
+    selected = st.multiselect(
+        "Select specific plant(s)", plant_names, default=plant_names)
 
+    filtered_df = df[df["plant_name"].isin(selected)]
+
+    st.write(plant_names)
     if selected:
         line_chart = get_temperature_line_chart(df, selected)
         st.altair_chart(line_chart, use_container_width=True)
@@ -79,23 +91,23 @@ if __name__ == "__main__":
         st.warning("No plants selected.")
 
     st.subheader("💦 Daily Average Moisture by Plant (Line Graph)")
-    plant_ids = df["plant_id"].unique()
-    selected_plant = st.selectbox("Select Plant Name", sorted(plant_ids))
+    plant_names = df["plant_name"].unique()
+    selected_plant = st.selectbox("Select Plant Name", plant_names)
     moisture_line_graph = get_moisture_levels_line_graph_archived(
         df, selected_plant)
     st.altair_chart(moisture_line_graph, use_container_width=True)
 
     st.subheader("Daily Moisture Distribution by Plant")
-    plant_ids = sorted(df["plant_id"].unique())
+    plant_names = df["plant_name"].unique()
     select_all = st.checkbox("Select all plants", value=True)
 
     if select_all:
-        selected_plants = plant_ids
+        selected_plants = plant_names
     else:
         selected_plants = st.multiselect(
-            "Select Plant(s)", plant_ids, default=[])
+            "Select Plant(s)", plant_names, default=[])
 
-    filtered_df = df[df["plant_id"].isin(selected_plants)]
+    filtered_df = df[df["plant_name"].isin(selected_plants)]
     # Only show the plot if there's data selected
     if not filtered_df.empty:
         moisture_boxplot = get_moisture_boxplot(filtered_df)

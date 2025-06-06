@@ -87,7 +87,8 @@ class PlantAPIClient:
                     not_found_count += 1
                 # other error than not found (e.g. sensor malfunction) Must record
                 else:
-                    not_found_count = 0
+                    if plant_id <= 50:  # duct tape fix
+                        not_found_count = 0
                     list_of_plants.append(json_data)
                 self.logger.warning(
                     "Plant %s data returned an error message: %s", plant_id, error_msg)

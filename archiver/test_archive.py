@@ -42,15 +42,8 @@ def test_daily_summary_valid():
 
     summarised_data = dataframe_daily_summary(example_dataframe, date_value)
 
-    print(type(expected_output))
-
-    # more options can be specified also
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-        print(summarised_data)
-        print(expected_output)
-
-    assert pd.testing.assert_frame_equal(
-        summarised_data, expected_output) == None
+    assert not pd.testing.assert_frame_equal(
+        summarised_data, expected_output)  # assert_frame_equal outputs None if successful
 
 
 def test_daily_summary_all_errors():

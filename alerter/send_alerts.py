@@ -4,7 +4,7 @@ alerts to botanists via AWS SES"""
 from io import StringIO
 from os import environ as ENV
 from datetime import datetime, timedelta, timezone
-import json
+from botocore.exceptions import BotoCoreError, ClientError
 import pandas as pd
 from boto3 import client
 from utilities import set_logger, get_logger
@@ -91,9 +91,9 @@ def send_ses_email(ses_client: client, html_content: str, error_count: int) -> N
                 }
             }
         )
-        logger.info(f"SES email sent! Message ID: {response['MessageId']}")
+        logger.info("SES email sent! Message ID: %s", response["MessageId"])
     except Exception as e:
-        logger.error(f"Failed to send SES email: {e}")
+        logger.error("Failed to send SES email: %s", e)
         raise
 
 
@@ -119,11 +119,11 @@ def get_previous_alerts_from_s3(s3_client: client) -> pd.DataFrame:
         combined_df = pd.concat(
             dfs, ignore_index=True) if dfs else pd.DataFrame()
         logger.info(
-            f"Loaded {len(combined_df)} previous alert records from S3.")
+            "Loaded %s previous alert records from S3.", len(combined_df))
         return combined_df
 
-    except Exception as e:
-        logger.error(f"Error retrieving previous alerts from S3: {e}")
+    except BotoCoreError as e:
+        logger.error("Error retrieving previous alerts from S3: %s", e)
         return pd.DataFrame()
 
 
@@ -139,11 +139,13 @@ def save_alert_history_to_s3(s3_client: client, error_data: pd.DataFrame) -> Non
         Body=json_buffer.getvalue(),
         ContentType="application/json"
     )
-    logger.info(f"Alert history saved to S3: {datetime.now():%Y-%m-%d_%H%M%S}")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    logger.info("Alert history saved to S3: %s", timestamp)
 
 
 def run_plant_alerter(event) -> dict:
     """Run all components of the plant alerter process."""
+    set_logger()
     logger = get_logger()
 
     error_df = extract_error_from_event(event)
@@ -155,8 +157,6 @@ def run_plant_alerter(event) -> dict:
 
     previous_alerts = get_previous_alerts_from_s3(s3_client)
     if not previous_alerts.empty:
-        previous_alerts["error_msg"]
-
         recent_alerts = previous_alerts[previous_alerts["last_alert"]
                                         > datetime.now(timezone.utc) - timedelta(hours=1)]
         if "plant_id" in error_df.columns:
@@ -185,13 +185,8 @@ def alerter_lambda_handler(event, context):
             "statusCode": 200,
             "body": "Alerter executed successfully."
         }
-    except Exception as e:
+    except (BotoCoreError, ClientError) as e:
         return {
             "statusCode": 500,
             "body": f"Alerter failed: {str(e)}"
         }
-
-
-if __name__ == "__main__":
-    set_logger()
-    pass

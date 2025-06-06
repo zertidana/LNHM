@@ -57,6 +57,8 @@ if __name__ == "__main__":
     print(df)
 
     st.title("📈 Historical Data Analysis")
+    st.markdown("![A photo of a plant](https://perenual.com/storage/species_image/917_araucaria_heterophylla/regular/49833684212_2aff9d7b3c_b.jpg)")
+    st.image("https://perenual.com/storage/species_image/917_araucaria_heterophylla/regular/49833684212_2aff9d7b3c_b.jpg", width=100)
 
     st.subheader("🚨 Plants Needing Attention")
 

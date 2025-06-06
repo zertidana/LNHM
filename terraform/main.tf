@@ -7,11 +7,6 @@ provider "aws" {
     secret_key = var.AWS_SECRET_ACCESS_KEY
 }
 
-# data "aws_vpc" "c17-vpc" {
-#     id = var.VPC_ID
-# }
-
-
 #########################
 ### ECR 
 #########################
@@ -41,16 +36,6 @@ data "aws_ecr_image" "plant_health_alert_image" {
     repository_name = data.aws_ecr_repository.plant_health_alert_image_repo.name
     image_tag       = "latest"
 }
-
-# data "aws_ecr_repository" "health_check_image_repo" {
-#     name = "c17-raffles-plant-health-lambda"
-# }
-
-# data "aws_ecr_image" "health_check_image" {
-#     repository_name = data.aws_ecr_repository.health_check_image_repo.name
-#     image_tag       = "latest"
-# }
-
 
 #########################
 ### IAM 
@@ -345,6 +330,7 @@ resource "aws_iam_role_policy_attachment" "step_function_policy_attachment" {
 #########################
 ### Lambda 
 #########################
+
 resource "aws_lambda_function" "etl_lambda" {
     function_name = "c17-raffles-etl-lambda"
     role = aws_iam_role.etl_lambda_role.arn

@@ -5,14 +5,14 @@ from dotenv import load_dotenv
 import pyodbc
 import streamlit as st
 
-from visualisations import (get_average_moisture_level_per_plant_bar_chart,
-                            get_average_temperature_per_plant_bar_chart,
-                            get_moisture_levels_line_graph,
-                            get_temperature_line_graph,
-                            show_plant_info,
-                            get_average_temperature_per_city_bar_chart,
-                            get_moisture_level_per_botanist_bar_chart,
-                            get_avg_temp_area_chart)
+from visualisations.visualisations import (get_average_moisture_level_per_plant_bar_chart,
+                                           get_average_temperature_per_plant_bar_chart,
+                                           get_moisture_levels_line_graph,
+                                           get_temperature_line_graph,
+                                           show_plant_info,
+                                           get_average_temperature_per_city_bar_chart,
+                                           get_moisture_level_per_botanist_bar_chart,
+                                           get_avg_temp_area_chart)
 
 # pylint: disable=no-member, invalid-name, too-many-arguments, c-extension-no-member
 load_dotenv()

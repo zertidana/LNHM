@@ -76,7 +76,6 @@ if __name__ == "__main__":
     }))
 
     st.subheader("🌡️ Daily Average Temperature by Plant (Line Chart)")
-    st.write(df.columns)
     plant_names = df["plant_name"].unique()
     select_all = st.checkbox("Select All Plants", value=True)
 

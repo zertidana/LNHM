@@ -9,9 +9,6 @@ This directory contains the scripts required to send alerts via AWS SES.
     Defines the lambda handler for the AWS lambda function which sends alerts based on a previous lambda event output (plants requiring attention or containing errors).
 - `Dockerfile`
     Builds the docker image used to package and deploy the AWS lambda function.
-- `utilities.py`
-    Contains helper functions which are used in `send_alerts.py` to set up logging.
-
 
 ## Alerter Docker Container
 

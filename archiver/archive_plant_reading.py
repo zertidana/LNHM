@@ -9,7 +9,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from boto3 import client
 from botocore.exceptions import BotoCoreError, ClientError
-from utilities import set_logger, get_logger
+from utils import set_logger, get_logger
 
 
 def create_tsql_engine() -> sqlalchemy.Engine:

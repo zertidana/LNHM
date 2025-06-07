@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from botocore.exceptions import BotoCoreError, ClientError
 import pandas as pd
 from boto3 import client
-from utilities import set_logger, get_logger
+from utils import set_logger, get_logger
 
 
 def create_ses_client() -> client:

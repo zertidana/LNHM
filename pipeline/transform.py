@@ -4,7 +4,7 @@ import datetime
 import os
 import pandas as pd
 
-from utilities import get_logger, set_logger, load_csv_data
+from utils import get_logger, set_logger, load_csv_to_df
 
 
 def clean_dataframe_from_csv(file_path: str = 'data/output.csv') -> pd.DataFrame:
@@ -13,7 +13,7 @@ def clean_dataframe_from_csv(file_path: str = 'data/output.csv') -> pd.DataFrame
     logger = get_logger()
     logger.info("Loading data from file path...")
     try:
-        input_dataframe = load_csv_data(file_path)
+        input_dataframe = load_csv_to_df(file_path)
     except Exception as exc:
         logger.info("Data did not successfully load.")
         raise exc
@@ -102,7 +102,7 @@ def save_dataframe_to_csv(output_dataframe: pd.DataFrame,
 
     # Check if the file exists and read the date.
     if os.path.exists(file_path_day):
-        day_data = load_csv_data(file_path_day)[
+        day_data = load_csv_to_df(file_path_day)[
             'recording_taken'].head(1).to_string(index=False)
         day_data = datetime.datetime.fromisoformat(day_data)
         # If it doesn't match, the day has changed
@@ -128,7 +128,7 @@ def summarise_day_from_csv(datetime_value: datetime, file_path_day: str = 'data/
     """Summarise the day's averages for each unique plant_id,
     and save as historical data."""
     logger = get_logger()
-    day_data = load_csv_data(file_path_day)
+    day_data = load_csv_to_df(file_path_day)
     summarised_day_data = dataframe_daily_summary(day_data, datetime_value)
 
     # Check if file exists and add headers if not

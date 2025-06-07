@@ -6,7 +6,7 @@ from extract import PlantAPIClient
 from transform import clean_dataframe
 from load import insert_transformed_data
 
-from utilities import set_logger, get_logger
+from utils import set_logger, get_logger
 
 
 def run_pipeline() -> pd.DataFrame:

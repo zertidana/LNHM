@@ -9,7 +9,7 @@ from transform import clean_dataframe_from_csv, save_dataframe_to_csv, summarise
 import pandas as pd
 
 
-@patch('transform.load_csv_data')
+@patch('transform.load_csv_to_df')
 def test_transform_clean_dataframe_valid(test_load_data):
     """Tests data to make sure it is validated"""
 

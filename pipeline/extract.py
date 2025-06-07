@@ -5,7 +5,7 @@ import csv
 from dotenv import load_dotenv
 import requests
 
-from utilities import get_logger, set_logger
+from utils import get_logger, set_logger
 
 
 class PlantAPIClient:

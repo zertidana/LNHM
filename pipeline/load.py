@@ -6,7 +6,7 @@ import sqlalchemy
 import pandas as pd
 import pyodbc
 
-from utilities import get_logger, set_logger, load_csv_data
+from utils import get_logger, set_logger, load_csv_to_df
 
 
 def insert_transformed_data(transformed_data: pd.DataFrame = None) -> pd.DataFrame:
@@ -17,7 +17,7 @@ def insert_transformed_data(transformed_data: pd.DataFrame = None) -> pd.DataFra
     if transformed_data is None:
         if path.exists('data/normalised_minute_output.csv'):
             logger.info("Loading local recent data...")
-            transformed_data = load_csv_data(
+            transformed_data = load_csv_to_df(
                 'data/normalised_minute_output.csv')
             logger.info("Successfully loaded recent data!")
         else:

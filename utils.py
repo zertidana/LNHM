@@ -1,5 +1,4 @@
-"""Python script for logging on AWS."""
-
+"""A script containing utility functions."""
 from logging import getLogger, INFO, StreamHandler
 from sys import stdout
 import pandas as pd
@@ -17,7 +16,7 @@ def set_logger():
     logger.addHandler(StreamHandler(stdout))
 
 
-def load_csv_data(file_path: str = 'data/output.csv') -> pd.DataFrame:
+def load_csv_to_df(file_path: str = 'data/output.csv') -> pd.DataFrame:
     """Loads the unclean data from csv."""
     logger = get_logger()
     if not isinstance(file_path, str):

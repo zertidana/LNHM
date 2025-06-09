@@ -12,6 +12,7 @@ The data is visualised using Streamlit, a lightweight web app framework chosen f
 - `pipeline/`: ETL scripts and related tests.
 - `bash_scripts/`: Shell scripts for running the pipeline and initializing the database.
 - `terraform/`: Infrastructure-as-code files, including Docker configuration for the ETL pipeline.
+- `utils.py`: Script containing utility functions.
 
 
 ## 🤐 Environment Variable Structure
